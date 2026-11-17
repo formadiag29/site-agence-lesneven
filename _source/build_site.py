@@ -14,7 +14,7 @@ LOGO = "https://diagnostic-immobilier-arliane.fr/wp-content/themes/ARLIANE/image
 DEVIS = "/devis/"
 TODAY = date.today().isoformat()
 AVIS_URL = "https://share.google/TphOHGbXyvr36DbpX"
-FICHE_LAN = "https://www.google.com/maps/search/?api=1&query=Arliane+Diagnostic+Immobilier+36+Penarguear+29260+Lanarvily"
+FICHE_LAN = "https://share.google/anPsgZyXMJUAxXIOB"
 FICHES = f'<p class="fiches">Retrouvez-nous sur Google : <a href="{AVIS_URL}" rel="noopener">fiche de l\'agence de Lesneven</a> · <a href="{FICHE_LAN}" rel="noopener">fiche de Lanarvily</a></p>'
 AVIS = f'<p class="avis"><span class="etoiles" aria-hidden="true">★★★★★</span> <strong>4,8 / 5</strong> sur Google, 41 avis pour l\'agence de Lesneven · <strong>4,9 / 5</strong>, 39 avis pour notre adresse de Lanarvily. Lire les avis : <a href="{AVIS_URL}" rel="noopener">Lesneven</a>, <a href="{FICHE_LAN}" rel="noopener">Lanarvily</a> <span class="note">(relevé du 17 novembre 2026)</span></p>'
 
