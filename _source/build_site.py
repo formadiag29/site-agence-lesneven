@@ -457,6 +457,7 @@ def finalize():
     open(OUT + "/CNAME", "w").write("www.sas-liberge.fr\n")
     open(OUT + "/.nojekyll", "w").write("")
     for f in ("favicon.ico", "icon-192.png", "apple-touch-icon.png"): shutil.copy("/home/claude/favicons/" + f, OUT + "/" + f)
+    open(OUT + "/google095ac99d20450d98.html", "w").write("google-site-verification: google095ac99d20450d98.html")
     k = open("/home/claude/indexnow_key.txt").read().strip(); open(OUT + f"/{k}.txt", "w").write(k)
     return pages
 
