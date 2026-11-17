@@ -79,3 +79,4 @@ thead th{background:var(--fond);border-bottom:2px solid var(--vert)}
 .avis{font-size:.95rem;margin:10px auto;max-width:none}
 .avis .etoiles{color:#f5a623;letter-spacing:2px;font-size:1.1rem}
 .avis .note{font-size:.82rem}
+.carte .ico{display:block;color:var(--accent);margin-bottom:6px}

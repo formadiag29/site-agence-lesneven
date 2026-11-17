@@ -85,7 +85,7 @@ def analyse(ou, k):
     if k["pmaison"] >= 75: L.append(f"Le parc diagnostiqué {ou} est très majoritairement composé de maisons individuelles ({k['pmaison']} %). Les dossiers de vente y comportent le plus souvent le DPE, les diagnostics électricité et gaz, l'état des risques et, selon l'âge du bien, l'amiante et le plomb.")
     elif k["pappart"] >= 50: L.append(f"Les appartements représentent {k['pappart']} % des logements diagnostiqués {ou}. Le <a href=\"/diagnostics/loi-carrez-boutin/\">mesurage loi Carrez</a> s'ajoute donc très souvent au dossier, et les copropriétés sont concernées par le <a href=\"/diagnostics/pppt/\">PPPT</a> et le <a href=\"/diagnostics/dpe-collectif/\">DPE collectif</a>.")
     else: L.append(f"Le parc diagnostiqué {ou} mêle maisons ({k['pmaison']} %) et appartements ({k['pappart']} %) : selon le bien, le dossier va du simple DPE au dossier complet avec mesurage loi Carrez en copropriété.")
-    if k["pav48"] >= 20: L.append(f"{k['pav48']} % des logements diagnostiqués ont été construits avant 1948 : le <a href=\"/diagnostics/plomb/\">diagnostic plomb</a> y est fréquent, et un <a href=\"/diagnostics/termites/\">état parasitaire</a> est une précaution utile dans le bâti ancien.")
+    if k["pav48"] >= 20: L.append(f"{k['pav48']} % des logements diagnostiqués ont été construits avant 1948 : le <a href=\"/diagnostics/plomb/\">diagnostic plomb</a> y est fréquent, et l'<a href=\"/diagnostics/etat-parasitaire/\">état parasitaire</a>, que nous réalisons sur tous les biens, y prend tout son sens.")
     if k["pav89"] >= 55: L.append(f"{k['pav89']} % des logements datent d'avant 1989 : ils sont concernés par le <a href=\"/diagnostics/amiante/\">diagnostic amiante</a>, obligatoire pour tout permis de construire antérieur au 1er juillet 1997.")
     if k["pelec"] >= 55: L.append(f"L'électricité est l'énergie de chauffage principale de {k['pelec']} % des logements. Avec le nouveau coefficient applicable au 1er janvier 2027, une partie d'entre eux va gagner une classe énergétique : <a href=\"/dpe-2027/\">vérifiez-le avec notre simulateur</a>.")
     elif k["pgaz"] >= 40: L.append(f"Le gaz naturel chauffe {k['pgaz']} % des logements diagnostiqués : le <a href=\"/diagnostics/gaz/\">diagnostic gaz</a> est requis dès que l'installation a plus de 15 ans.")
@@ -151,7 +151,7 @@ ARTICLES = [
   desc="Dans les communes couvertes par l'arrêté préfectoral mérule, le vendeur doit informer l'acquéreur du risque. Le point pour le Nord-Finistère.",
   corps=lambda k: f"""<p class="chapo">La mérule est un champignon qui se développe dans les bâtiments humides et mal ventilés et qui dégrade les bois de charpente et de plancher. Le climat et le bâti ancien bretons lui sont favorables.</p>
 <h2>L'obligation d'information</h2><p>Dans les communes inscrites dans un arrêté préfectoral « mérule », le vendeur doit fournir, au sein du dossier de diagnostic technique, une information sur la présence d'un risque de mérule. Par ailleurs, l'occupant ou le propriétaire qui a connaissance de la présence de mérule dans un immeuble doit en faire la déclaration en mairie.</p>
-<h2>L'état parasitaire, une sécurité pour la vente</h2><p>Au-delà de l'information obligatoire, l'<a href="/diagnostics/termites/">état parasitaire</a> recherche concrètement les indices de mérule et d'insectes à larves xylophages. Dans les communes que nous suivons, {k['pav48']} % des logements diagnostiqués datent d'avant 1948 : pour ces biens, c'est une précaution que les notaires et les acquéreurs demandent de plus en plus.</p>
+<h2>L'état parasitaire, une sécurité pour la vente</h2><p>Au-delà de l'information obligatoire, l'<a href="/diagnostics/etat-parasitaire/">état parasitaire</a> recherche concrètement les indices de mérule et d'insectes à larves xylophages. Dans les communes que nous suivons, {k['pav48']} % des logements diagnostiqués datent d'avant 1948 : pour ces biens, c'est une précaution que les notaires et les acquéreurs demandent de plus en plus.</p>
 <h2>Votre commune est-elle concernée ?</h2><p>Nous vérifions pour vous, à partir de l'adresse du bien, si un arrêté préfectoral s'applique. Appelez-nous au <a href="tel:{TEL_LINK}">{TEL}</a>.</p>
 <p class="note">Sources : articles L. 126-5, L. 126-25 et L. 271-4 du Code de la construction et de l'habitation ; base des DPE de l'ADEME.</p>"""),
 ]
@@ -165,7 +165,7 @@ PROJETS = [
   intro="Pour vendre une maison, le dossier de diagnostic technique doit être annexé à la promesse de vente, et l'étiquette du DPE doit figurer dès l'annonce. Voici les diagnostics à prévoir.",
   liste=lambda: [L("dpe", "toujours obligatoire, valable 10 ans"), L("erp", "toujours obligatoire, valable 6 mois"), L("amiante", "si le permis de construire est antérieur au 1er juillet 1997"),
                  L("plomb", "si la maison a été construite avant 1949"), L("electricite", "si l'installation a plus de 15 ans"), L("gaz", "si l'installation a plus de 15 ans"),
-                 L("audit-energetique", "obligatoire si le DPE classe la maison en E, F ou G"), L("termites", "selon la commune, ou pour sécuriser la vente d'un bien ancien")],
+                 L("audit-energetique", "obligatoire si le DPE classe la maison en E, F ou G"), L("etat-parasitaire", "réalisé sur tous les biens que nous diagnostiquons")],
   stat=lambda d, k, dans: f"Les maisons représentent {k['pmaison']} % des logements diagnostiqués {dans} ({nb(d['maison'])} DPE). {k['pefg']} % des DPE du secteur sont classés E, F ou G : pour ces maisons, l'audit énergétique s'ajoute au dossier de vente.",
   faq=[("Quand faire réaliser les diagnostics ?", "Dès la mise en vente : l'étiquette du DPE est obligatoire dans l'annonce, et l'audit énergétique, s'il est requis, doit être remis dès la première visite."),
        ("Combien de temps dure la visite ?", "Une à deux heures pour une maison, selon la surface, l'âge et le nombre de diagnostics à réaliser.")]),
@@ -173,7 +173,7 @@ PROJETS = [
   intro="La vente d'un appartement en copropriété ajoute au dossier le mesurage loi Carrez et plusieurs documents propres à l'immeuble. Voici les diagnostics à prévoir pour le lot.",
   liste=lambda: [L("dpe", "toujours obligatoire, valable 10 ans"), L("erp", "toujours obligatoire, valable 6 mois"), L("loi-carrez-boutin", "surface privative loi Carrez, obligatoire en copropriété"),
                  L("amiante", "parties privatives, si le permis de construire est antérieur au 1er juillet 1997"), L("plomb", "si l'immeuble a été construit avant 1949"),
-                 L("electricite", "si l'installation a plus de 15 ans"), L("gaz", "si l'installation a plus de 15 ans"), L("termites", "selon la commune")],
+                 L("electricite", "si l'installation a plus de 15 ans"), L("gaz", "si l'installation a plus de 15 ans"), L("etat-parasitaire", "réalisé sur tous les biens que nous diagnostiquons")],
   stat=lambda d, k, dans: f"{nb(d['appart'])} DPE d'appartements sont enregistrés {dans}, soit {k['pappart']} % des logements diagnostiqués. {k['pav75']} % des logements du secteur datent d'avant 1975 : l'amiante et, pour les plus anciens, le plomb sont très souvent au dossier.",
   faq=[("Faut-il un audit énergétique pour un appartement ?", "Non. L'audit énergétique réglementaire à la vente ne concerne que les maisons et les immeubles en monopropriété."),
        ("Quels documents de copropriété sont remis à l'acquéreur ?", "Notamment le carnet d'entretien, le <a href=\"/diagnostics/pppt/\">plan pluriannuel de travaux</a> ou son projet, et le dossier technique amiante des parties communes. Le syndic vous les fournit.")]),
@@ -190,7 +190,7 @@ PROJETS = [
   liste=lambda: [L("amiante", "repérage amiante avant travaux ou avant démolition, obligatoire pour tout bâtiment dont le permis est antérieur au 1er juillet 1997"),
                  L("plomb", "repérage du plomb avant travaux dans les bâtiments d'avant 1949, pour protéger les intervenants"),
                  L("audit-energetique", "pour choisir et hiérarchiser les travaux de rénovation énergétique"), L("dpe", "après travaux, pour faire constater la nouvelle étiquette"),
-                 L("termites", "état parasitaire avant d'intervenir sur une charpente ou un plancher ancien")],
+                 L("etat-parasitaire", "avant d'intervenir sur une charpente ou un plancher ancien")],
   stat=lambda d, k, dans: f"{k['pav89']} % des logements diagnostiqués {dans} ont été construits avant 1989, et {k['pav48']} % avant 1948. La grande majorité des chantiers de rénovation du secteur porte donc sur des bâtiments susceptibles de contenir de l'amiante.",
   faq=[("Le diagnostic amiante de la vente suffit-il avant des travaux ?", "Non. Le repérage avant travaux est une mission différente, ciblée sur les zones du chantier, avec des sondages destructifs."),
        ("Qui doit commander le repérage ?", "Le donneur d'ordre des travaux : le propriétaire, le maître d'ouvrage ou le syndic pour les parties communes.")]),
@@ -326,7 +326,7 @@ def build():
 
     # ---------------- questionnaire
     faq = [("Cette liste est-elle officielle ?", "Elle est indicative : elle repose sur vos réponses. Nous la confirmons gratuitement avec vous par téléphone avant toute intervention."),
-           ("Et les termites ou la mérule ?", "L'obligation dépend d'arrêtés préfectoraux propres à chaque commune. Nous vérifions pour vous à partir de l'adresse du bien.")]
+           ("Et la mérule ou les termites ?", "Nous réalisons un <a href=\"/diagnostics/etat-parasitaire/\">état parasitaire</a> sur tous les biens : il recherche la mérule et les insectes du bois. Notre secteur n'est pas concerné par les termites.")]
     page("/quels-diagnostics/", "Quels diagnostics pour mon bien ? Liste en 1 minute | Arliane Lesneven", "Vente, location, travaux ou copropriété : répondez à six questions et obtenez la liste des diagnostics immobiliers obligatoires pour votre bien.",
          "Quels diagnostics immobiliers pour mon bien ?", f"""<p class="chapo">Répondez à six questions : nous vous indiquons les diagnostics à faire réaliser pour votre projet.</p>
 {QUESTIONNAIRE}
@@ -345,7 +345,7 @@ def build():
              ld=[{"@context": "https://schema.org", "@type": "Article", "headline": a["titre"], "description": a["desc"], "datePublished": a["date"], "dateModified": a["date"], "author": {"@id": BASE + "/#agence"}, "publisher": {"@id": BASE + "/#agence"}, "mainEntityOfPage": BASE + f"/actualites/{a['slug']}/"}])
 
     # ---------------- accueil
-    faq = [("Quels diagnostics sont obligatoires pour vendre ?", "Cela dépend de l'âge du bien, de son type et de sa localisation. Le DPE et l'état des risques sont toujours requis ; s'y ajoutent selon les cas l'amiante, le plomb, l'électricité, le gaz, les termites, le mesurage loi Carrez et l'audit énergétique. <a href=\"/quels-diagnostics/\">Obtenez la liste pour votre bien</a>."),
+    faq = [("Quels diagnostics sont obligatoires pour vendre ?", "Cela dépend de l'âge du bien, de son type et de sa localisation. Le DPE et l'état des risques sont toujours requis ; s'y ajoutent selon les cas l'amiante, le plomb, l'électricité, le gaz, l'état parasitaire, le mesurage loi Carrez et l'audit énergétique. <a href=\"/quels-diagnostics/\">Obtenez la liste pour votre bien</a>."),
            ("Sous quel délai pouvez-vous intervenir ?", "Nous proposons en général un rendez-vous sous quelques jours. Les rapports vous sont transmis par e-mail."),
            ("Réalisez-vous les audits énergétiques, les DTG et les PPPT ?", "Oui. Nous réalisons l'<a href=\"/diagnostics/audit-energetique/\">audit énergétique réglementaire</a> et, pour les copropriétés, le <a href=\"/diagnostics/pppt/\">PPPT</a>, le <a href=\"/diagnostics/dtg/\">DTG</a> et le <a href=\"/diagnostics/dpe-collectif/\">DPE collectif</a>."),
            ("Dans quelles communes intervenez-vous ?", f"Dans tout le Nord-Finistère : Lesneven, Brest, Landerneau, Landivisiau, Plabennec, Lannilis, Saint-Pol-de-Léon, Saint-Renan, Morlaix et les communes voisines. <a href=\"/secteurs/\">Voir les {len(C)} communes</a>."),

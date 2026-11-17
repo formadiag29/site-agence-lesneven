@@ -65,15 +65,18 @@ DIAGS = [
   plus=[("En cas de danger grave", "Si un danger grave et immédiat est constaté, l'alimentation de l'appareil ou de l'installation concernée est coupée et le distributeur est informé."),],
   prepa=["Gaz en service le jour de la visite", "Dernière attestation d'entretien de la chaudière"],
   faq=[("Je n'ai qu'une plaque de cuisson au gaz en bouteille, suis-je concerné ?", "Une installation alimentée par une bouteille raccordée par un simple flexible n'entre pas dans le champ du diagnostic. En cas de doute, appelez-nous."),]),
- dict(slug="termites", nom="Termites et parasites", titre="État termites et état parasitaire",
-  desc="État relatif à la présence de termites, mérule et insectes à larves xylophages à Lesneven et dans le Nord-Finistère. Devis gratuit.",
-  intro="L'état relatif à la présence de termites est obligatoire à la vente dans les zones délimitées par arrêté préfectoral. L'état parasitaire, plus large, recherche aussi les champignons lignivores comme la mérule et les insectes à larves xylophages.",
-  quand=["Vente d'un bien situé dans une zone couverte par un arrêté préfectoral termites", "Vente d'un bien ancien ou humide, pour sécuriser la transaction (état parasitaire)", "À la demande d'un notaire, d'un acquéreur ou d'une banque"],
-  validite="6 mois.",
-  plus=[("La mérule, un risque bien connu en Bretagne", "Ce champignon se développe dans les bâtiments humides et mal ventilés et dégrade les bois de structure. Un état parasitaire permet de lever le doute avant une vente."),
-        ("Votre commune est-elle concernée ?", "Nous vérifions pour vous, à partir de l'adresse du bien, si un arrêté préfectoral s'applique.")],
-  prepa=["Accès aux caves, vides sanitaires, combles et dépendances", "Dégagement des plinthes et pieds de murs si possible"],
-  faq=[("L'état termites couvre-t-il la mérule ?", "Non. L'état termites ne porte que sur les termites. La recherche de mérule relève de l'état parasitaire."),]),
+ dict(slug="etat-parasitaire", nom="État parasitaire", titre="État parasitaire (mérule et insectes du bois)",
+  desc="État parasitaire à Lesneven et dans le Nord-Finistère : recherche de mérule, de champignons lignivores et d'insectes xylophages. Réalisé sur tous nos dossiers de vente.",
+  intro="L'état parasitaire recherche les agents de dégradation du bois dans le bâtiment : champignons lignivores comme la mérule, insectes à larves xylophages comme le capricorne ou la vrillette. Dans le Nord-Finistère, où le climat humide favorise ces pathologies, nous le réalisons sur tous les biens que nous diagnostiquons.",
+  quand=["Vente d'une maison ou d'un appartement : nous le réalisons systématiquement, quel que soit l'âge du bien", "À la demande du notaire, de l'acquéreur ou de la banque", "Avant des travaux sur une charpente, un plancher ou des boiseries", "Dans les communes couvertes par un arrêté préfectoral mérule, où le vendeur doit informer l'acquéreur du risque"],
+  validite="Aucune durée n'est fixée par la réglementation. L'usage, suivi par les notaires, est de six mois.",
+  plus=[("Ce que nous contrôlons", "Charpente, planchers, solives, plinthes, menuiseries, caves et vides sanitaires. L'examen est visuel, complété par le sondage des bois et des mesures d'humidité, à la recherche d'indices d'infestation et de conditions favorables à leur développement."),
+        ("La mérule, un risque bien connu en Bretagne", "Ce champignon se développe dans les bâtiments humides et mal ventilés et dégrade les bois de structure, parfois sans signe visible depuis les pièces de vie. Un état parasitaire permet de lever le doute avant une vente."),
+        ("Et les termites ?", "Notre secteur d'intervention n'est pas concerné par les termites : aucun état termites n'y est exigé. C'est l'état parasitaire, plus large, qui répond au risque réel du bâti breton."),
+        ("Une mission encadrée par une norme", "L'état parasitaire est réalisé selon la norme NF P 03-200, qui définit la méthode d'investigation et le contenu du rapport.")],
+  prepa=["Accès aux caves, vides sanitaires, combles et dépendances", "Dégagement des plinthes et des pieds de murs si possible", "Signalement des dégâts des eaux ou traitements du bois déjà réalisés"],
+  faq=[("L'état parasitaire est-il obligatoire ?", "Il n'est pas imposé par la loi, mais il est très souvent demandé par les notaires et les acquéreurs en Bretagne. Il protège le vendeur contre un recours ultérieur pour vice caché. C'est pourquoi nous le réalisons sur tous les biens."),
+       ("Que se passe-t-il si de la mérule est détectée ?", "Le rapport localise les zones atteintes. La présence de mérule doit être déclarée en mairie, et le traitement est confié à une entreprise spécialisée, après suppression de la cause d'humidité.")]),
  dict(slug="loi-carrez-boutin", nom="Loi Carrez et Boutin", titre="Mesurage loi Carrez et loi Boutin",
   desc="Mesurage loi Carrez pour la vente d'un lot de copropriété et surface habitable loi Boutin pour la location, à Lesneven et dans le Nord-Finistère.",
   intro="La surface indiquée dans un acte de vente ou un bail vous engage. Le mesurage loi Carrez concerne la vente des lots de copropriété, la surface habitable loi Boutin concerne les locations.",
@@ -162,14 +165,14 @@ TABLEAU = [
  ("Plomb (CREP)", "plomb", "Logements construits avant 1949", "1 an si présence, illimitée sinon", "6 ans si présence, illimitée sinon"),
  ("Électricité", "electricite", "Installation de plus de 15 ans", "3 ans", "6 ans"),
  ("Gaz", "gaz", "Installation de plus de 15 ans", "3 ans", "6 ans"),
- ("Termites", "termites", "Zones couvertes par arrêté préfectoral", "6 mois", "Non requis"),
+ ("État parasitaire", "etat-parasitaire", "Tous les biens : réalisé systématiquement par notre agence", "6 mois (usage)", "Non requis"),
  ("État des risques (ERP)", "erp", "Tous les biens", "6 mois", "6 mois"),
  ("Loi Carrez", "loi-carrez-boutin", "Lots de copropriété", "Illimitée sauf travaux", "Non requis"),
  ("Surface habitable (Boutin)", "loi-carrez-boutin", "Tous les logements loués", "Non requis", "Illimitée sauf travaux"),
  ("Audit énergétique", "audit-energetique", "Maisons et monopropriétés classées E, F ou G", "5 ans", "Non requis"),
 ]
 
-SEO = {'dpe': 'Diagnostic DPE', 'amiante': 'Diagnostic amiante', 'plomb': 'Diagnostic plomb (CREP)', 'electricite': 'Diagnostic électricité', 'gaz': 'Diagnostic gaz', 'termites': 'Diagnostic termites et mérule', 'loi-carrez-boutin': 'Mesurage loi Carrez et Boutin', 'erp': 'État des risques (ERP)', 'audit-energetique': 'Audit énergétique', 'pppt': 'PPPT copropriété', 'dtg': 'Diagnostic technique global (DTG)', 'dpe-collectif': 'DPE collectif'}
+SEO = {'dpe': 'Diagnostic DPE', 'amiante': 'Diagnostic amiante', 'plomb': 'Diagnostic plomb (CREP)', 'electricite': 'Diagnostic électricité', 'gaz': 'Diagnostic gaz', 'etat-parasitaire': 'État parasitaire et mérule', 'loi-carrez-boutin': 'Mesurage loi Carrez et Boutin', 'erp': 'État des risques (ERP)', 'audit-energetique': 'Audit énergétique', 'pppt': 'PPPT copropriété', 'dtg': 'Diagnostic technique global (DTG)', 'dpe-collectif': 'DPE collectif'}
 
 # ---------------------------------------------------------------- gabarit
 NAV = [("/diagnostics/", "Diagnostics"), ("/quels-diagnostics/", "Quels diagnostics ?"), ("/secteurs/", "Secteurs"),
@@ -260,7 +263,27 @@ def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head=""):
         pages.append((path, title, desc))
 
 def ul(items): return "<ul>" + "".join(f"<li>{x}</li>" for x in items) + "</ul>"
-def cartes(items): return '<div class="cartes">' + "".join(f'<a class="carte" href="{u}"><strong>{e(t)}</strong><span>{e(d)}</span></a>' for u, t, d in items) + "</div>"
+def _svg(inner): return f'<svg class="ico" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{inner}</svg>'
+MAISON = '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>'
+IMMEUBLE = '<path d="M5 21V4h9v17"/><path d="M14 9h5v12"/><path d="M8 8h3M8 12h3M8 16h3"/><path d="M3 21h18"/>'
+ICONS = {
+ "dpe": MAISON + '<path d="M13 11l-3 4h4l-3 4"/>',
+ "amiante": '<path d="M12 3l9 16H3z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r=".6"/>',
+ "plomb": '<path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/><path d="M10 14a2 2 0 0 0 2 2"/>',
+ "electricite": '<path d="M13 2L5 13h6l-1 9 8-11h-6z"/>',
+ "gaz": '<path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 0-6 1-9z"/>',
+ "etat-parasitaire": '<ellipse cx="12" cy="13" rx="4" ry="5.5"/><path d="M12 7.5V5M9 4l3 1 3-1M8 11H4M8 14H4M8.5 17L5 19M16 11h4M16 14h4M15.5 17l3.5 2M12 9v9"/>',
+ "loi-carrez-boutin": '<rect x="3" y="8" width="18" height="8" rx="1"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/>',
+ "erp": '<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+ "audit-energetique": '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 16v-3M12 16V9M15 16v-5"/>',
+ "pppt": IMMEUBLE + '<path d="M16 3v3M19 3v3"/>',
+ "dtg": '<path d="M4 20V5h8v15"/><path d="M7 9h2M7 13h2"/><circle cx="16.5" cy="14.5" r="3.5"/><path d="M19 17l2.5 2.5"/><path d="M2 20h10"/>',
+ "dpe-collectif": IMMEUBLE + '<path d="M18 2l-2 3h3l-2 3"/>',
+}
+def _ico(u):
+    m = re.match(r"^/diagnostics/([a-z0-9-]+)/", u)
+    return _svg(ICONS[m.group(1)]) if m and m.group(1) in ICONS else ""
+def cartes(items): return '<div class="cartes">' + "".join(f'<a class="carte" href="{u}">{_ico(u)}<strong>{e(t)}</strong><span>{e(d)}</span></a>' for u, t, d in items) + "</div>"
 def faq_html(faq): return '<h2>Questions fréquentes</h2>' + "".join(f"<details><summary>{e(q)}</summary><p>{a}</p></details>" for q, a in faq)
 def faq_ld(faq): return {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": re.sub("<[^>]+>", "", a)}} for q, a in faq]}
 
@@ -272,7 +295,7 @@ def build():
     cartes_villes = [(f'/secteurs/{v["slug"]}/', v["nom"], "Diagnostics immobiliers à " + v["nom"].split(" et ")[0]) for v in VILLES]
 
     # ---- accueil
-    faq = [("Quels diagnostics sont obligatoires pour vendre ?", "Cela dépend de l'âge du bien, de son type et de sa localisation. Le DPE et l'état des risques sont toujours requis ; s'y ajoutent selon les cas l'amiante, le plomb, l'électricité, le gaz, les termites, le mesurage loi Carrez et l'audit énergétique. <a href=\"/vente-location/\">Voir le tableau complet</a>."),
+    faq = [("Quels diagnostics sont obligatoires pour vendre ?", "Cela dépend de l'âge du bien, de son type et de sa localisation. Le DPE et l'état des risques sont toujours requis ; s'y ajoutent selon les cas l'amiante, le plomb, l'électricité, le gaz, l'état parasitaire, le mesurage loi Carrez et l'audit énergétique. <a href=\"/vente-location/\">Voir le tableau complet</a>."),
            ("Sous quel délai pouvez-vous intervenir ?", "Nous proposons en général un rendez-vous sous quelques jours. Les rapports vous sont transmis par e-mail."),
            ("Intervenez-vous pour les professionnels ?", "Oui : agences immobilières, notaires, syndics de copropriété, bailleurs et entreprises de travaux. <a href=\"/professionnels/\">Voir notre accompagnement des professionnels</a>.")]
     body = f"""<p class="chapo">Vous vendez, vous louez ou vous préparez des travaux ? Notre agence de Lesneven réalise l'ensemble de vos diagnostics immobiliers obligatoires dans tout le Nord-Finistère, avec des diagnostiqueurs certifiés et des rapports clairs.</p>
@@ -296,7 +319,7 @@ def build():
          "Diagnostic immobilier à Lesneven et dans le Nord-Finistère", body, ld=[faq_ld(faq)])
 
     # ---- diagnostics
-    page("/diagnostics/", "Tous nos diagnostics immobiliers | Arliane Lesneven", "Tous les diagnostics immobiliers de notre agence de Lesneven : DPE, amiante, plomb, électricité, gaz, termites, Carrez, ERP, audit énergétique, DTG.",
+    page("/diagnostics/", "Tous nos diagnostics immobiliers | Arliane Lesneven", "Tous les diagnostics immobiliers de notre agence de Lesneven : DPE, amiante, plomb, électricité, gaz, état parasitaire, Carrez, ERP, audit énergétique, DTG.",
          "Nos diagnostics immobiliers", f"<p class=\"chapo\">Du DPE à l'audit énergétique, nous réalisons tous les diagnostics exigés pour une vente, une location, des travaux ou la gestion d'une copropriété.</p>{cartes(cartes_diag)}<p>Vous ne savez pas lesquels vous concernent ? Consultez notre <a href=\"/vente-location/\">tableau vente ou location</a> ou appelez-nous au <a href=\"tel:{TEL_LINK}\">{TEL}</a>.</p>",
          crumbs=[("Diagnostics", "/diagnostics/")])
     for d in DIAGS:

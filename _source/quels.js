@@ -5,7 +5,7 @@
   var L = {dpe:["DPE","/diagnostics/dpe/"], erp:["État des risques (ERP)","/diagnostics/erp/"], amiante:["Diagnostic amiante","/diagnostics/amiante/"],
     plomb:["Diagnostic plomb (CREP)","/diagnostics/plomb/"], elec:["Diagnostic électricité","/diagnostics/electricite/"], gaz:["Diagnostic gaz","/diagnostics/gaz/"],
     carrez:["Mesurage loi Carrez","/diagnostics/loi-carrez-boutin/"], boutin:["Surface habitable (loi Boutin)","/diagnostics/loi-carrez-boutin/"],
-    audit:["Audit énergétique","/diagnostics/audit-energetique/"], termites:["État termites ou état parasitaire","/diagnostics/termites/"],
+    audit:["Audit énergétique","/diagnostics/audit-energetique/"], parasitaire:["État parasitaire (mérule, insectes du bois)","/diagnostics/etat-parasitaire/"],
     pppt:["Projet de plan pluriannuel de travaux (PPPT)","/diagnostics/pppt/"], dpecol:["DPE collectif","/diagnostics/dpe-collectif/"], dtg:["Diagnostic technique global (DTG)","/diagnostics/dtg/"]};
   function li(k, note){ return '<li><a href="' + L[k][1] + '">' + L[k][0] + '</a>' + (note ? ' <span>' + note + '</span>' : '') + '</li>'; }
   function calc(){
@@ -21,7 +21,7 @@
           if (c === "efg") ob.push(li("audit", "maison ou immeuble classé E, F ou G"));
           else if (c === "inconnu") av.push(li("audit", "obligatoire si le DPE classe le bien en E, F ou G"));
         }
-        av.push(li("termites", "selon la commune : nous vérifions pour vous"));
+        ob.push(li("parasitaire", "réalisé sur tous les biens par notre agence"));
       } else {
         ob.push(li("boutin", "à mentionner dans le bail"));
         if (ancien && t === "appartement") ob.push(li("amiante", "dossier amiante des parties privatives, à tenir à disposition du locataire"));
