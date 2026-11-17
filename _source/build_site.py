@@ -13,6 +13,8 @@ RUE, CP, VILLE = "15 rue Général de Gaulle", "29260", "Lesneven"
 LOGO = "https://diagnostic-immobilier-arliane.fr/wp-content/themes/ARLIANE/images/logo-arliane.png"
 DEVIS = "/devis/"
 TODAY = date.today().isoformat()
+AVIS_URL = "https://www.google.com/search?q=Arliane+Diagnostic+Immobilier+Finistere+Lesneven+avis"
+AVIS = f'<p class="avis"><span class="etoiles" aria-hidden="true">★★★★★</span> <strong>4,8 / 5</strong> sur Google, 41 avis pour l\'agence de Lesneven · <strong>4,9 / 5</strong>, 39 avis pour notre adresse de Lanarvily. <a href="{AVIS_URL}" rel="noopener">Lire les avis</a> <span class="note">(relevé du 17 novembre 2026)</span></p>'
 
 # ---------------------------------------------------------------- contenus
 DIAGS = [
@@ -235,6 +237,7 @@ def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head=""):
 <div class="large">
 <h2>Un diagnostic à faire réaliser ?</h2>
 <p>Réponse rapide, devis gratuit et rendez-vous sous quelques jours dans tout le Nord-Finistère.</p>
+{AVIS}
 <p><a class="btn" href="tel:{TEL_LINK}">📞 Appelez-nous au {TEL}</a> <a class="btn clair" href="{DEVIS}">Demander un devis</a></p>
 <p class="note"><a href="/">Retour à l'accueil</a> · <a href="/quels-diagnostics/">Quels diagnostics pour mon bien ?</a></p>
 </div>

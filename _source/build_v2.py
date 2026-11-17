@@ -352,6 +352,7 @@ def build():
            ("Intervenez-vous pour les professionnels ?", "Oui : agences immobilières, notaires, syndics de copropriété, bailleurs et entreprises de travaux. <a href=\"/professionnels/\">Voir notre accompagnement des professionnels</a>.")]
     body = f"""<p class="chapo">Vous vendez, vous louez, vous préparez des travaux ou vous gérez une copropriété ? Notre agence de Lesneven réalise tous vos diagnostics immobiliers dans le Nord-Finistère : DPE, audit énergétique, amiante, plomb, électricité, gaz, DTG et PPPT.</p>
 <p><a class="btn" href="tel:{TEL_LINK}">📞 {TEL}</a> <a class="btn clair" href="/devis/">Demander un devis gratuit</a></p>
+{B.AVIS}
 <h2>Quels diagnostics pour votre bien ?</h2><p>Répondez à six questions, nous vous donnons la liste.</p>
 {QUESTIONNAIRE}
 <h2>Votre projet</h2>
