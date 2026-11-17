@@ -229,6 +229,7 @@ def build():
     B.ZONES_PIED[:] = [(zpath(z[0]), z[1]) for z in ZONES]
     B.build()
     shutil.copy("/home/claude/quels.js", OUT + "/assets/quels.js")
+    shutil.copytree("/home/claude/photos", OUT + "/assets/photos", dirs_exist_ok=True)
     shutil.rmtree(OUT + "/secteurs", ignore_errors=True)
     B.pages[:] = [p for p in B.pages if not p[0].startswith("/secteurs/")]
     C = charger()
@@ -344,6 +345,26 @@ def build():
              crumbs=[("Actualités", "/actualites/"), (a["titre"], f"/actualites/{a['slug']}/")],
              ld=[{"@context": "https://schema.org", "@type": "Article", "headline": a["titre"], "description": a["desc"], "datePublished": a["date"], "dateModified": a["date"], "author": {"@id": BASE + "/#agence"}, "publisher": {"@id": BASE + "/#agence"}, "mainEntityOfPage": BASE + f"/actualites/{a['slug']}/"}])
 
+    # ---------------- agence
+    PH_EQ = """<figure class="photo"><picture><source type="image/webp" srcset="/assets/photos/equipe-arliane-lesneven-640.webp 640w, /assets/photos/equipe-arliane-lesneven.webp 1200w" sizes="(max-width:700px) 100vw, 900px"><img src="/assets/photos/equipe-arliane-lesneven.jpg" width="1200" height="800" loading="lazy" alt="L'équipe de l'agence Arliane Diagnostic Immobilier de Lesneven"></picture><figcaption>L'équipe de l'agence de Lesneven</figcaption></figure>"""
+    PH_AG = """<figure class="photo etroite"><picture><source type="image/webp" srcset="/assets/photos/agence-arliane-lesneven.webp"><img src="/assets/photos/agence-arliane-lesneven.jpg" width="614" height="490" loading="lazy" alt="Façade de l'agence Arliane Diagnostic Immobilier, 15 rue Général de Gaulle à Lesneven"></picture><figcaption>Notre agence, 15 rue Général de Gaulle à Lesneven</figcaption></figure>"""
+    PH_AG0 = PH_AG.replace('loading="lazy" ', "")
+    body = f"""<p class="chapo">« Fondée par la famille, portée par la confiance, dédiée à votre tranquillité » : c'est la devise inscrite sur notre vitrine, au cœur de Lesneven.</p>
+{PH_EQ}
+<h2>Une équipe locale à votre écoute</h2>
+<p>Notre équipe réunit des diagnostiqueurs certifiés et un accueil à l'agence. Nous réalisons l'ensemble des diagnostics immobiliers, pour les particuliers comme pour les professionnels, dans tout le Nord-Finistère.</p>
+<p><a class="btn" href="tel:{TEL_LINK}">📞 {TEL}</a> <a class="btn clair" href="/devis/">Demander un devis gratuit</a></p>
+{B.AVIS}
+<h2>Une agence en centre-ville de Lesneven</h2>
+{PH_AG}
+<p>Nous vous accueillons au {B.RUE}, {B.CP} {B.VILLE}, du lundi au vendredi, de 9h à 12h et de 14h à 18h. <a href="/contact/">Coordonnées et itinéraire</a>.</p>
+<h2>Ce que nous faisons</h2>
+{cartes([(f'/diagnostics/{d["slug"]}/', d["nom"], d["intro"].split(". ")[0].rstrip(".") + ".") for d in DIAGS])}
+<h2>Où nous intervenons</h2>
+{cartes([(zpath(z[0]), z[2], f"{len([i for i in z[4] if i in C])} communes desservies") for z in ZONES])}"""
+    page("/agence/", "Notre agence et notre équipe | Arliane Diagnostic Immobilier Lesneven", "Découvrez l'équipe et l'agence Arliane Diagnostic Immobilier de Lesneven : diagnostiqueurs certifiés, accueil en centre-ville, interventions dans tout le Nord-Finistère.",
+         "Notre agence de Lesneven et son équipe", body, crumbs=[("Notre agence", "/agence/")])
+
     # ---------------- accueil
     faq = [("Quels diagnostics sont obligatoires pour vendre ?", "Cela dépend de l'âge du bien, de son type et de sa localisation. Le DPE et l'état des risques sont toujours requis ; s'y ajoutent selon les cas l'amiante, le plomb, l'électricité, le gaz, l'état parasitaire, le mesurage loi Carrez et l'audit énergétique. <a href=\"/quels-diagnostics/\">Obtenez la liste pour votre bien</a>."),
            ("Sous quel délai pouvez-vous intervenir ?", "Nous proposons en général un rendez-vous sous quelques jours. Les rapports vous sont transmis par e-mail."),
@@ -353,6 +374,7 @@ def build():
     body = f"""<p class="chapo">Vous vendez, vous louez, vous préparez des travaux ou vous gérez une copropriété ? Notre agence de Lesneven réalise tous vos diagnostics immobiliers dans le Nord-Finistère : DPE, audit énergétique, amiante, plomb, électricité, gaz, DTG et PPPT.</p>
 <p><a class="btn" href="tel:{TEL_LINK}">📞 {TEL}</a> <a class="btn clair" href="/devis/">Demander un devis gratuit</a></p>
 {B.AVIS}
+{PH_AG0}
 <h2>Quels diagnostics pour votre bien ?</h2><p>Répondez à six questions, nous vous donnons la liste.</p>
 {QUESTIONNAIRE}
 <h2>Votre projet</h2>
@@ -367,6 +389,8 @@ def build():
 <div><strong>Du DPE à la copropriété</strong><p>Particuliers, professionnels, syndics : un seul interlocuteur, du simple DPE à l'audit énergétique, au DTG et au PPPT.</p></div>
 <div><strong>La force d'un réseau</strong><p>Membre du réseau national Arliane Diagnostic Immobilier, spécialiste du diagnostic depuis 2007.</p></div>
 </div>
+{PH_EQ}
+<p><a href="/agence/">Découvrir notre agence et notre équipe</a></p>
 <h2>Le Nord-Finistère en chiffres</h2>
 <p>Nous avons analysé {nb(tout['n'])} DPE enregistrés dans {len(C)} communes : {kt['pefg']} % sont classés E, F ou G et {kt['pelec']} % concernent des logements chauffés à l'électricité. <a href="/observatoire-dpe-nord-finistere/">Consulter l'observatoire DPE du Nord-Finistère</a>.</p>
 <h2>Nous intervenons près de chez vous</h2>

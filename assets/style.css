@@ -80,3 +80,5 @@ thead th{background:var(--fond);border-bottom:2px solid var(--vert)}
 .avis .etoiles{color:#f5a623;letter-spacing:2px;font-size:1.1rem}
 .avis .note{font-size:.82rem}
 .carte .ico{display:block;color:var(--accent);margin-bottom:6px}
+
+.photo{margin:1.5rem 0}.photo img{display:block;width:100%;height:auto;border-radius:12px}.photo.etroite{max-width:560px}.photo figcaption{font-size:.85rem;color:#666;margin-top:.4rem}

@@ -250,7 +250,7 @@ def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head=""):
 <div><strong>{e(NOM)}</strong><br>{RUE}<br>{CP} {VILLE}<br><a href="tel:{TEL_LINK}">{TEL}</a><br><a href="mailto:{MAIL}">{MAIL}</a><br>Du lundi au vendredi, 9h-12h et 14h-18h</div>
 <div><strong>Diagnostics</strong><br>{"<br>".join(f'<a href="/diagnostics/{d["slug"]}/">{e(d["nom"])}</a>' for d in DIAGS)}</div>
 <div><strong>Secteurs</strong><br>{"<br>".join(f'<a href="{u}">{e(n)}</a>' for u, n in ZONES_PIED)}</div>
-<div><strong>En pratique</strong><br><a href="/quels-diagnostics/">Quels diagnostics pour mon bien ?</a><br><a href="/vente-location/">Vente ou location</a><br><a href="/projets/">Vos diagnostics par projet</a><br><a href="/professionnels/">Professionnels</a><br><a href="/dpe-2027/">Simulateur DPE 2027</a><br><a href="/observatoire-dpe-nord-finistere/">Observatoire DPE</a><br><a href="/actualites/">Actualités</a><br><a href="/devis/">Devis gratuit</a><br><a href="/contact/">Contact</a><br><a href="/mentions-legales/">Mentions légales</a></div>
+<div><strong>En pratique</strong><br><a href="/quels-diagnostics/">Quels diagnostics pour mon bien ?</a><br><a href="/vente-location/">Vente ou location</a><br><a href="/projets/">Vos diagnostics par projet</a><br><a href="/professionnels/">Professionnels</a><br><a href="/dpe-2027/">Simulateur DPE 2027</a><br><a href="/observatoire-dpe-nord-finistere/">Observatoire DPE</a><br><a href="/actualites/">Actualités</a><br><a href="/devis/">Devis gratuit</a><br><a href="/agence/">Notre agence</a><br><a href="/contact/">Contact</a><br><a href="/mentions-legales/">Mentions légales</a></div>
 </div>
 </footer>
 </body>
@@ -416,6 +416,7 @@ def build():
 <div><strong>Par e-mail</strong><p><a href="mailto:{MAIL}">{MAIL}</a></p></div>
 <div><strong>À l'agence</strong><p>{RUE}<br>{CP} {VILLE}</p><p><a href="https://www.google.com/maps/search/?api=1&query={(RUE + ' ' + CP + ' ' + VILLE).replace(' ', '+')}" rel="noopener">Voir l'itinéraire</a></p></div>
 </div>
+<figure class="photo etroite"><picture><source type="image/webp" srcset="/assets/photos/agence-arliane-lesneven.webp"><img src="/assets/photos/agence-arliane-lesneven.jpg" width="614" height="490" loading="lazy" alt="Façade de l'agence Arliane Diagnostic Immobilier à Lesneven"></picture><figcaption>Notre agence, 15 rue Général de Gaulle à Lesneven</figcaption></figure>
 <h2>Zone d'intervention</h2><p>Lesneven, Brest, Landerneau, Plabennec, Landivisiau, Lannilis et l'ensemble du Nord-Finistère. <a href="/secteurs/">Voir nos secteurs</a>.</p>"""
     page("/contact/", "Contact et horaires | Arliane Diagnostic Immobilier Lesneven", "Contactez notre agence de diagnostic immobilier à Lesneven : 02 98 46 39 01, 15 rue Général de Gaulle. Du lundi au vendredi, 9h-12h et 14h-18h.",
          "Contacter l'agence de Lesneven", body, crumbs=[("Contact", "/contact/")])
