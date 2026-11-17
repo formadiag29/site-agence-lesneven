@@ -220,7 +220,14 @@ def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head=""):
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="{url}">
-<meta property="og:image" content="{LOGO}">
+<meta property="og:image" content="{BASE}/assets/photos/agence-arliane-lesneven.jpg">
+<meta property="og:image:width" content="614">
+<meta property="og:image:height" content="490">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#5f8f24">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/assets/style.css">
 {ldhtml}{extra_head}</head>
 <body>
@@ -449,6 +456,8 @@ def finalize():
     open(OUT + "/robots.txt", "w").write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}/sitemap.xml\n")
     open(OUT + "/CNAME", "w").write("www.sas-liberge.fr\n")
     open(OUT + "/.nojekyll", "w").write("")
+    for f in ("favicon.ico", "icon-192.png", "apple-touch-icon.png"): shutil.copy("/home/claude/favicons/" + f, OUT + "/" + f)
+    k = open("/home/claude/indexnow_key.txt").read().strip(); open(OUT + f"/{k}.txt", "w").write(k)
     return pages
 
 if __name__ == "__main__":
