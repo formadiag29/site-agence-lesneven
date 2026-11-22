@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Version 2 : communes avec données ADEME, secteurs, pages service × secteur, observatoire, questionnaire, actualités."""
 import sys, unicodedata, re, shutil
-sys.path.insert(0, "/home/claude")
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_site as B
 from build_site import page, ul, cartes, faq_html, faq_ld, e, TEL, TEL_LINK, MAIL, BASE, OUT, DIAGS
 
@@ -18,6 +19,8 @@ ZONES = [  # (slug, ville centre, libellé, « dans … », indices des communes
  ("morlaix", "Morlaix", "Morlaix et sa baie", "à Morlaix et autour de sa baie", [50, 51, 52, 53, 54]),
 ]
 SERVICES_ZONE = ["dpe", "audit-energetique", "pppt", "dtg"]
+TITRES_ZONE = {"dpe": "DPE {centre} : diagnostic de performance énergétique | Arliane", "audit-energetique": "Audit énergétique {centre} : maisons classées E, F ou G | Arliane",
+               "pppt": "PPPT {centre} : plan pluriannuel de travaux de copropriété | Arliane", "dtg": "DTG {centre} : diagnostic technique global de copropriété | Arliane"}
 MAIN = {v["nom"].split(" et ")[0]: v for v in B.VILLES}  # textes rédigés à la main
 DIAG = {d["slug"]: d for d in DIAGS}
 COUL = ["#00A06D", "#52B153", "#A5CC74", "#F4E70F", "#F0B50F", "#EB8235", "#D7221F"]
@@ -38,7 +41,7 @@ def de_la(nom):
 
 def charger():
     C = {}
-    for l in open("/home/claude/ademe_communes.txt", encoding="utf8"):
+    for l in open(B.SRC + "/ademe_communes.txt", encoding="utf8"):
         if l.startswith("#") or not l.strip(): continue
         f = l.strip().split("|"); i = int(f[0])
         if i in EXCLUS: continue
@@ -196,6 +199,137 @@ PROJETS = [
        ("Qui doit commander le repérage ?", "Le donneur d'ordre des travaux : le propriétaire, le maître d'ouvrage ou le syndic pour les parties communes.")]),
 ]
 
+
+# ---------------------------------------------------------------- maillage interne
+PRINC = ["Lesneven", "Brest", "Plabennec", "Landerneau", "Landivisiau", "Lannilis", "Saint-Pol-de-Léon", "Saint-Renan", "Morlaix"]
+ART_DIAG = {  # articles liés à chaque prestation
+ "dpe": ["dpe-2027-coefficient-electricite", "passoires-thermiques-calendrier-location"],
+ "audit-energetique": ["audit-energetique-vente-maison-classe-e", "dpe-2027-coefficient-electricite"],
+ "pppt": ["pppt-petites-coproprietes"], "dtg": ["pppt-petites-coproprietes"], "dpe-collectif": ["pppt-petites-coproprietes"],
+ "erp": ["radon-finistere-etat-des-risques"], "etat-parasitaire": ["merule-finistere-vente-immobiliere"], "plomb": ["merule-finistere-vente-immobiliere"],
+ "electricite": ["passoires-thermiques-calendrier-location"], "gaz": ["passoires-thermiques-calendrier-location"], "loi-carrez-boutin": ["pppt-petites-coproprietes"],
+}
+ART_SERVICE = {  # prestation localisée mise en avant dans chaque article
+ "dpe-2027-coefficient-electricite": "dpe", "passoires-thermiques-calendrier-location": "dpe", "audit-energetique-vente-maison-classe-e": "audit-energetique",
+ "pppt-petites-coproprietes": "pppt", "radon-finistere-etat-des-risques": None, "merule-finistere-vente-immobiliere": None,
+}
+def cartes_art(slugs):
+    a = {x["slug"]: x for x in ARTICLES}
+    return cartes([("/actualites/" + x + "/", a[x]["titre"], a[x]["desc"]) for x in slugs])
+def liens_art(slugs):
+    a = {x["slug"]: x for x in ARTICLES}
+    return ul([f'<a href="/actualites/{x}/">{e(a[x]["titre"])}</a>' for x in slugs])
+def liens_princ(): return ", ".join(f'<a href="/secteurs/{slug(n)}/">{e(n)}</a>' for n in PRINC)
+def projets_de(s): return [p for p in PROJETS if any(f"/diagnostics/{s}/" in x for x in p["liste"]())]
+def autres_zones(prefixe, zs): return ", ".join(f'<a href="{prefixe}{z[0]}/">{e(z[1])}</a>' for z in ZONES if z[0] != zs)
+
+def extra_diag(s):
+    """Bas des pages prestations : secteurs, villes, projets et articles liés."""
+    D = DIAG[s]
+    if s in SERVICES_ZONE:
+        h = f'<h2>{e(D["nom"])} : où nous intervenons</h2>' + cartes([(f"/diagnostics/{s}/{z[0]}/", f'{D["nom"]} – {z[1]}', f'{D["titre"]} {z[3]}') for z in ZONES])
+    else:
+        h = f'<h2>{e(D["nom"])} : où nous intervenons</h2>' + cartes([(zpath(z[0]), z[2], "Diagnostics immobiliers " + z[3]) for z in ZONES])
+    h += f'<p>Villes principales : {liens_princ()}. <a href="/secteurs/">Voir toutes les communes desservies</a>.</p>'
+    ps = projets_de(s)
+    if ps: h += "<h2>Selon votre projet</h2>" + cartes([(f"/projets/{p['slug']}/", p["nom"], p["h1"]) for p in ps])
+    if ART_DIAG.get(s): h += "<h2>À lire sur ce sujet</h2>" + cartes_art(ART_DIAG[s])
+    return h
+
+# ---------------------------------------------------------------- contenu local tiré des données ADEME
+PERIODES = [("av48", "Avant 1948"), ("p4874", "De 1948 à 1974"), ("p7588", "De 1975 à 1988"), ("p8905", "De 1989 à 2005"), ("p06", "Depuis 2006")]
+ENERGIES = [("elec", "électricité"), ("gaz", "gaz"), ("fioul", "fioul"), ("bois", "bois"), ("reseau", "réseau de chaleur")]
+def table_periodes(c):
+    rows = "".join(f'<tr><th scope="row">{l}</th><td>{nb(c[k])}</td><td>{pct(c[k], c["n"])} %</td></tr>' for k, l in PERIODES)
+    return f'<div class="defile"><table><thead><tr><th scope="col">Période de construction</th><th scope="col">DPE enregistrés</th><th scope="col">Part</th></tr></thead><tbody>{rows}</tbody></table></div>'
+def phrase_energies(c, ou):
+    parts = sorted(((pct(c[k], c["n"]), l) for k, l in ENERGIES if pct(c[k], c["n"]) >= 1), reverse=True)
+    return f'<p>Énergie de chauffage principale des logements diagnostiqués {ou} : ' + ", ".join(f"{l} {p} %" for p, l in parts) + ".</p>"
+INDIC = [("pefg", "Classés E, F ou G"), ("pfg", "Classés F ou G"), ("pmaison", "Maisons"), ("pelec", "Chauffage électrique"), ("pgaz", "Chauffage au gaz"), ("pav48", "Construits avant 1948"), ("pav75", "Construits avant 1975")]
+def table_compar(nom, k, zlib, kz, kt):
+    rows = "".join(f'<tr><th scope="row">{l}</th><td>{k[i]} %</td><td>{kz[i]} %</td><td>{kt[i]} %</td></tr>' for i, l in INDIC)
+    return f'<div class="defile"><table><thead><tr><th scope="col">Indicateur</th><th scope="col">{e(nom)}</th><th scope="col">{e(zlib)}</th><th scope="col">Nord-Finistère</th></tr></thead><tbody>{rows}</tbody></table></div>'
+def phrase_compar(nom, k, kt):
+    d = k["pefg"] - kt["pefg"]
+    if d >= 3: a = f"La part de logements classés E, F ou G y dépasse de {d} points la moyenne des communes que nous suivons ({kt['pefg']} %)."
+    elif d <= -3: a = f"La part de logements classés E, F ou G y est inférieure de {-d} points à la moyenne des communes que nous suivons ({kt['pefg']} %)."
+    else: a = f"La part de logements classés E, F ou G y est proche de la moyenne des communes que nous suivons ({kt['pefg']} %)."
+    d2 = k["pelec"] - kt["pelec"]
+    b = f" Le chauffage électrique y est {'plus' if d2 > 0 else 'moins'} répandu ({k['pelec']} % contre {kt['pelec']} %)." if abs(d2) >= 3 else ""
+    return f"<p>{a}{b}</p>"
+def articles_pour(k):
+    """Articles les plus utiles selon le profil de la commune."""
+    L = []
+    if k["pelec"] >= 50: L.append("dpe-2027-coefficient-electricite")
+    if k["pefg"] >= 25: L.append("audit-energetique-vente-maison-classe-e")
+    if k["pfg"] >= 8: L.append("passoires-thermiques-calendrier-location")
+    if k["pappart"] >= 25: L.append("pppt-petites-coproprietes")
+    if k["pav48"] >= 15: L.append("merule-finistere-vente-immobiliere")
+    L.append("radon-finistere-etat-des-risques")
+    return L
+def secteur_local(z):
+    zs = z[0]
+    return (f'<h2>Nos prestations {z[3]}</h2>' + cartes([(f"/diagnostics/{s}/{zs}/", DIAG[s]["nom"] + " – " + z[1], DIAG[s]["titre"] + " " + z[3]) for s in SERVICES_ZONE])
+            + "<p>Selon votre projet : " + ", ".join(f'<a href="/projets/{p["slug"]}/{zs}/">{p["nom"][0].lower() + p["nom"][1:]}</a>' for p in PROJETS) + ".</p>")
+
+# ---------------------------------------------------------------- pages locales prioritaires : contenu rédigé, chiffres issus des données
+def _lesneven(c, k, kt, tout):
+    haut = f"""<h2>Une agence sur place, en centre-ville</h2>
+<p>Notre agence se trouve au {B.RUE}, à Lesneven. Elle est ouverte du lundi au vendredi, de 9h à 12h et de 14h à 18h : vous pouvez y déposer vos documents (factures de travaux, plans, anciens diagnostics) et y régler votre diagnostic. <a href="/contact/">Coordonnées et itinéraire</a> · <a href="/agence/">Découvrir l'équipe</a>.</p>"""
+    bas = f"""<h2>Vendre ou louer à Lesneven : ce qui revient le plus souvent</h2>
+{ul([f'<strong>Presque autant d\'appartements que de maisons.</strong> {k["pappart"]} % des logements diagnostiqués sont des appartements. En copropriété, le <a href="/diagnostics/loi-carrez-boutin/">mesurage loi Carrez</a> s\'ajoute au dossier de vente, et l\'immeuble relève du <a href="/diagnostics/pppt/lesneven/">projet de plan pluriannuel de travaux</a> dès qu\'il a plus de quinze ans.',
+     f'<strong>Un centre ancien.</strong> {k["pav48"]} % des logements diagnostiqués ont été construits avant 1948 : pour un bien d\'avant 1949, le <a href="/diagnostics/plomb/">diagnostic plomb</a> est obligatoire à la vente comme à la location.',
+     f'<strong>Le gaz bien présent.</strong> {k["pgaz"]} % des logements sont chauffés au gaz : le <a href="/diagnostics/gaz/">diagnostic gaz</a> est requis dès que l\'installation a plus de quinze ans.',
+     f'<strong>{nb(k["efg"])} DPE classés E, F ou G</strong>, soit {k["pefg"]} % : pour une maison, l\'<a href="/diagnostics/audit-energetique/lesneven/">audit énergétique</a> s\'ajoute au dossier de vente ; pour une location, le <a href="/actualites/passoires-thermiques-calendrier-location/">calendrier des interdictions de louer</a> s\'applique.'])}"""
+    faq = [("Où se trouve votre agence à Lesneven ?", f"Au {B.RUE}, {B.CP} {B.VILLE}. Elle est ouverte du lundi au vendredi, de 9h à 12h et de 14h à 18h. Téléphone : {TEL}."),
+           ("Ma maison du centre de Lesneven date d'avant 1949 : quels diagnostics en plus ?", "Le constat de risque d'exposition au plomb (CREP) s'ajoute au DPE, à l'état des risques et au diagnostic amiante. Les diagnostics électricité et gaz sont requis si les installations ont plus de quinze ans."),
+           ("Faut-il un DPE pour louer un appartement à Lesneven ?", "Oui. Le DPE est obligatoire pour toute mise en location et il doit figurer dans l'annonce. Les logements classés G ne peuvent plus être proposés à la location depuis le 1er janvier 2025.")]
+    return haut, bas, faq
+
+def _brest(c, k, kt, tout):
+    metro = ["Guipavas", "Le Relecq-Kerhuon", "Gouesnou", "Bohars", "Guilers", "Plouzané", "Plougastel-Daoulas"]
+    haut = f"""<h2>Votre diagnostiqueur immobilier à Brest</h2>
+<p>Nos diagnostiqueurs certifiés se déplacent à Brest et dans la métropole ({", ".join(f'<a href="/secteurs/{slug(n)}/">{e(n)}</a>' for n in metro)}) pour les ventes, les locations, les travaux et les copropriétés. Le rendez-vous se prend par téléphone auprès de notre agence de Lesneven, et les rapports vous sont envoyés par e-mail.</p>"""
+    part_app = pct(c["appart"], tout["appart"])
+    bas = f"""<h2>Un parc d'appartements hérité de la reconstruction</h2>
+<p>{pct(c["p4874"], c["n"])} % des logements diagnostiqués à Brest ont été construits entre 1948 et 1974, années de la reconstruction du centre-ville puis des grands ensembles, et {k["pappart"]} % sont des appartements. Pour une vente, cela se traduit ainsi :</p>
+{ul(['<strong>Amiante</strong> : le <a href="/diagnostics/amiante/">diagnostic amiante</a> des parties privatives est requis dès que le permis de construire est antérieur au 1er juillet 1997, ce qui est le cas de la grande majorité des immeubles brestois.',
+     '<strong>Loi Carrez</strong> : le <a href="/diagnostics/loi-carrez-boutin/">mesurage</a> est obligatoire pour tout lot de copropriété.',
+     f'<strong>Plomb</strong> : il ne concerne que les logements d\'avant 1949, soit une minorité du parc diagnostiqué ({k["pav48"]} % construits avant 1948).',
+     f'<strong>Audit énergétique</strong> : il ne s\'applique pas aux appartements. Seules les maisons ({k["pmaison"]} % des logements diagnostiqués) et les immeubles en monopropriété classés E, F ou G y sont soumis : <a href="/diagnostics/audit-energetique/brest/">audit énergétique à Brest</a>.'])}
+<h2>Gaz et réseau de chaleur : deux particularités brestoises</h2>
+<p>{k["pgaz"]} % des logements diagnostiqués à Brest sont chauffés au gaz : le <a href="/diagnostics/gaz/">diagnostic gaz</a> est requis dès que l'installation intérieure a plus de quinze ans. {pct(c["reseau"], c["n"])} % sont raccordés à un réseau de chaleur : dans ce cas, le DPE tient compte des caractéristiques du réseau et de l'installation collective, et les documents remis par le syndic sont utiles le jour de la visite.</p>
+<p>Le chauffage électrique ne concerne que {k["pelec"]} % des logements, contre {kt["pelec"]} % dans l'ensemble des communes que nous suivons : le changement de coefficient du 1er janvier 2027 y fera donc évoluer moins d'étiquettes qu'ailleurs. <a href="/diagnostics/dpe/brest/">Le DPE à Brest en détail</a>.</p>
+<h2>Copropriétés brestoises : PPPT, DTG et DPE collectif</h2>
+<p>Avec {nb(c["appart"])} DPE d'appartements enregistrés, Brest rassemble {part_app} % des appartements diagnostiqués dans les {tout["nbc"]} communes que nous suivons. Toute copropriété de plus de quinze ans doit aujourd'hui disposer d'un <a href="/diagnostics/pppt/brest/">projet de plan pluriannuel de travaux</a>, qui s'appuie sur le <a href="/diagnostics/dpe-collectif/">DPE collectif</a> de l'immeuble ; le <a href="/diagnostics/dtg/brest/">diagnostic technique global</a> va plus loin lorsque l'immeuble le justifie. Nous réalisons ces missions avec un bureau d'études structure et thermique partenaire.</p>"""
+    faq = [("Quels diagnostics pour vendre un appartement à Brest ?", "Le DPE, l'état des risques et le mesurage loi Carrez dans tous les cas. S'y ajoutent l'amiante si le permis de construire est antérieur au 1er juillet 1997, l'électricité et le gaz si les installations ont plus de quinze ans, et le plomb si l'immeuble date d'avant 1949. Nous réalisons aussi l'état parasitaire sur tous les biens."),
+           ("Faut-il un audit énergétique pour vendre un appartement à Brest ?", "Non. L'audit énergétique réglementaire ne concerne que les maisons individuelles et les immeubles en monopropriété classés E, F ou G."),
+           ("Votre agence est à Lesneven : vous déplacez-vous à Brest ?", f"Oui, nous intervenons chaque semaine à Brest et dans sa métropole. Appelez-nous au {TEL} pour convenir d'un rendez-vous.")]
+    return haut, bas, faq
+
+def _plabennec(c, k, kt, tout):
+    haut = ""
+    bas = f"""<h2>Une commune de maisons : ce que cela change pour vos diagnostics</h2>
+<p>{k["pmaison"]} % des logements diagnostiqués à Plabennec sont des maisons. {pct(c["p4874"] + c["p7588"], c["n"])} % ont été construits entre 1948 et 1988, et {pct(c["p06"], c["n"])} % depuis 2006.</p>
+{ul([f'<strong>Maison classée E, F ou G</strong> : l\'audit énergétique est obligatoire pour la vendre. {nb(k["efg"])} DPE sont dans ce cas à Plabennec, soit {k["pefg"]} % contre {kt["pefg"]} % dans l\'ensemble des communes que nous suivons. <a href="/diagnostics/audit-energetique/abers/">L\'audit énergétique dans le secteur de Plabennec</a>.',
+     f'<strong>Chauffage électrique</strong> ({k["pelec"]} % des logements) : avec le coefficient applicable au 1er janvier 2027, une maison peut changer de classe et sortir de l\'obligation d\'audit. <a href="/dpe-2027/">Vérifiez-le avant de commander</a>.',
+     f'<strong>Chauffage au fioul</strong> ({k["pfioul"]} % des logements) : ce sont souvent les étiquettes les plus basses. L\'audit chiffre le remplacement de la chaudière et les travaux d\'isolation à mener en priorité.',
+     '<strong>Maison construite avant juillet 1997</strong> : le <a href="/diagnostics/amiante/">diagnostic amiante</a> est requis pour la vente.',
+     '<strong>Maison des années 2000</strong> : pas d\'amiante ni de plomb à prévoir, mais une installation électrique ou de gaz posée avant 2011 a désormais plus de quinze ans : les diagnostics <a href="/diagnostics/electricite/">électricité</a> et <a href="/diagnostics/gaz/">gaz</a> deviennent obligatoires.'])}"""
+    faq = [("Ma maison de Plabennec est classée E : un audit énergétique est-il obligatoire pour la vendre ?", "Oui. Depuis le 1er janvier 2025, l'audit énergétique est obligatoire pour vendre une maison classée E, comme c'était déjà le cas pour les classes F et G. Il est valable cinq ans et doit être remis à l'acquéreur dès la première visite."),
+           ("Ma maison est chauffée à l'électricité : son étiquette va-t-elle changer en 2027 ?", "C'est possible : le coefficient de l'électricité passe de 1,9 à 1,7 au 1er janvier 2027. <a href=\"/dpe-2027/\">Notre simulateur</a> estime la nouvelle étiquette à partir du numéro ADEME de votre DPE."),
+           ("Ma maison date de 2008 : quels diagnostics pour la vendre ?", "Le DPE et l'état des risques, ainsi que les diagnostics électricité et gaz puisque les installations ont plus de quinze ans. Ni l'amiante ni le plomb ne sont requis. Nous réalisons aussi l'état parasitaire sur tous les biens.")]
+    return haut, bas, faq
+
+LOCAL = {
+ "Lesneven": dict(f=_lesneven, titre="DPE et diagnostic immobilier à Lesneven : agence en centre-ville | Arliane",
+    desc=lambda c, k: f"DPE, amiante, plomb, électricité, gaz, audit énergétique : tous vos diagnostics immobiliers à Lesneven. Agence au 15 rue Général de Gaulle. {nb(c['n'])} DPE analysés. Devis gratuit."),
+ "Brest": dict(f=_brest, titre="Diagnostiqueur immobilier Brest : DPE, amiante, audit énergétique | Arliane",
+    desc=lambda c, k: f"Diagnostiqueur immobilier à Brest : DPE, amiante, loi Carrez, audit énergétique, PPPT et DTG de copropriété. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit."),
+ "Plabennec": dict(f=_plabennec, titre="Diagnostic immobilier Plabennec : DPE, audit énergétique, amiante | Arliane",
+    desc=lambda c, k: f"Diagnostic immobilier à Plabennec : DPE, audit énergétique des maisons classées E, F ou G, amiante, électricité, gaz. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit."),
+}
+
 def pages_projets(zd, C, tout, kt):
     etapes = '<div class="atouts"><div><strong>1. Un appel</strong><p>Nous vérifions avec vous les diagnostics réellement nécessaires pour votre bien.</p></div><div><strong>2. Une visite</strong><p>Tous les diagnostics sont réalisés lors d\'un même rendez-vous.</p></div><div><strong>3. Vos rapports</strong><p>Ils vous sont envoyés par e-mail, prêts à être transmis au notaire, à l\'agence ou aux entreprises.</p></div></div>'
     page("/projets/", "Vente, location, travaux : vos diagnostics par projet | Arliane Lesneven", "Vous vendez une maison, un appartement, vous louez ou vous préparez des travaux ? La liste des diagnostics immobiliers à prévoir selon votre projet.",
@@ -220,21 +354,25 @@ def pages_projets(zd, C, tout, kt):
 <p class="note">Liste indicative : nous la confirmons gratuitement pour votre bien. <a href="/quels-diagnostics/">Obtenez votre liste en six questions</a>.</p>
 <h2>La situation {dans}</h2><p>{p['stat'](d, k, dans)}</p>{tuiles(d, k)}{barres(d)}{SRC}
 <h2>Comment ça se passe ?</h2>{etapes}
+<h2>Nos prestations {dans}</h2>{cartes([(f"/diagnostics/{s}/{zs}/", DIAG[s]["nom"] + " – " + centre, DIAG[s]["titre"] + " " + dans) for s in SERVICES_ZONE])}
 <h2>Communes desservies</h2><p>{liens_communes(cs)}. <a href="{zpath(zs)}">Voir le secteur</a>.</p>
+<p>{e(p['nom'])} dans les autres secteurs : {autres_zones(f"/projets/{p['slug']}/", zs)}.</p>
 {faq_html(p['faq'])}"""
-            page(f"/projets/{p['slug']}/{zs}/", f"{p['seo']} {centre} | Arliane", f"{p['h1']} {dans} : diagnostics obligatoires, chiffres locaux, intervention rapide par notre agence de Lesneven. Devis gratuit.",
+            page(f"/projets/{p['slug']}/{zs}/", f"{p['seo']} {centre} : la liste pour votre bien | Arliane", f"{p['h1']} {dans} : liste des diagnostics obligatoires, chiffres locaux, devis gratuit.",
                  f"{p['h1']} {dans}", body, crumbs=[("Votre projet", "/projets/"), (p["nom"], f"/projets/{p['slug']}/"), (centre, f"/projets/{p['slug']}/{zs}/")], ld=[faq_ld(p["faq"])])
 
 def build():
     B.ZONES_PIED[:] = [(zpath(z[0]), z[1]) for z in ZONES]
+    C = charger()
+    B.COMMUNES_LD[:] = [c["nom"] for c in C.values()]
+    B.extra_diag = extra_diag
     B.build()
-    shutil.copy("/home/claude/quels.js", OUT + "/assets/quels.js")
-    shutil.copytree("/home/claude/photos", OUT + "/assets/photos", dirs_exist_ok=True)
+    shutil.copy(B.SRC + "/quels.js", OUT + "/assets/quels.js")
+    shutil.copytree(B.SRC + "/photos", OUT + "/assets/photos", dirs_exist_ok=True)
     shutil.rmtree(OUT + "/secteurs", ignore_errors=True)
     B.pages[:] = [p for p in B.pages if not p[0].startswith("/secteurs/")]
-    C = charger()
     zd = {z[0]: somme([C[i] for i in z[4] if i in C]) for z in ZONES}
-    tout = somme(list(C.values())); kt = chiffres(tout)
+    tout = somme(list(C.values())); kt = chiffres(tout); tout["nbc"] = len(C)
 
     # ---------------- communes
     for c in C.values():
@@ -244,17 +382,30 @@ def build():
         avert = '<p class="note">Le nombre de DPE enregistrés est faible : les pourcentages sont à lire avec prudence.</p>' if c["n"] < 80 else ""
         faq = [(f"Quels diagnostics faut-il pour vendre {ou} ?", "Le DPE et l'état des risques dans tous les cas, auxquels s'ajoutent selon le bien l'amiante, le plomb, l'électricité, le gaz, le mesurage loi Carrez et l'audit énergétique. <a href=\"/quels-diagnostics/\">Obtenez la liste pour votre bien</a>."),
                (f"Sous quel délai intervenez-vous {ou} ?", f"Nous proposons en général un rendez-vous sous quelques jours. Appelez-nous au {TEL}.")]
+        kz = chiffres(zd[z[0]]); loc = LOCAL.get(nom)
+        haut, bas, faq_loc = loc["f"](c, k, kt, tout) if loc else ("", "", [])
+        faq = faq_loc + faq
+        arts = articles_pour(k)
         body = f"""<p class="chapo">{intro}</p>
 {BTN}
+{haut}
 <h2>Le DPE {ou} en chiffres</h2>
 {tuiles(c, k)}{barres(c)}{avert}{SRC}
 <h2>Ce que ces chiffres disent du bâti {de_la(nom)}</h2>
 {("<p>" + m["bati"] + "</p>") if m else ""}{analyse(ou, k)}
+{bas}
+<h2>Âge du bâti et énergies de chauffage {ou}</h2>
+{table_periodes(c)}{phrase_energies(c, ou)}
+<h2>{e(nom)} comparé à son secteur et au Nord-Finistère</h2>
+{table_compar(nom, k, z[2], kz, kt)}{phrase_compar(nom, k, kt)}
+<p class="note">Même source et même date d'extraction que ci-dessus. <a href="/observatoire-dpe-nord-finistere/">Voir l'observatoire DPE du Nord-Finistère</a>.</p>
 <h2>Tous nos diagnostics {ou}</h2>{cartes_diags()}
+{secteur_local(z)}
 <h2>Copropriétés et professionnels</h2><p>Syndics, conseils syndicaux, agences et notaires {de_la(nom)} : nous réalisons le <a href="/diagnostics/pppt/">projet de plan pluriannuel de travaux (PPPT)</a>, le <a href="/diagnostics/dtg/">diagnostic technique global (DTG)</a>, le <a href="/diagnostics/dpe-collectif/">DPE collectif</a> et les <a href="/diagnostics/amiante/">repérages amiante avant travaux</a>. <a href="/professionnels/">Voir notre accompagnement des professionnels</a>.</p>
 <h2>Communes voisines</h2><p>{liens_communes(voisines)}. <a href="{zpath(z[0])}">Tout le secteur : {e(z[2])}</a>.</p>
+<h2>À lire pour votre projet {ou}</h2>{liens_art(arts)}
 {faq_html(faq)}"""
-        page(cpath(c), f"Diagnostic immobilier {nom} : DPE, audit, amiante | Arliane", f"Diagnostics immobiliers {ou} : DPE, audit énergétique, amiante, plomb, PPPT. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit.",
+        page(cpath(c), loc["titre"] if loc else f"Diagnostic immobilier {nom} : DPE, audit, amiante | Arliane", loc["desc"](c, k) if loc else f"Diagnostics immobiliers {ou} : DPE, audit énergétique, amiante, plomb, PPPT. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit.",
              f"Diagnostic immobilier {ou}", body, crumbs=[("Secteurs", "/secteurs/"), (z[1], zpath(z[0])), (nom, cpath(c))], ld=[faq_ld(faq)])
 
     # ---------------- secteurs
@@ -292,17 +443,21 @@ def build():
 {spec}
 <h2>Quand est-il obligatoire ?</h2>{ul(D['quand'])}
 <div class="fiche"><div><strong>Durée de validité</strong><p>{D['validite']}</p></div><div><strong>En savoir plus</strong><p><a href="/diagnostics/{s}/">Notre page complète : {e(D['titre'])}</a></p></div></div>
-<h2>Communes desservies</h2><p>{liens_communes(cs)}.</p>
+<h2>Communes desservies</h2><p>{liens_communes(cs)}. <a href="{zpath(zs)}">Tout le secteur : {e(lib)}</a>.</p>
+<h2>Autres prestations {dans}</h2>{cartes([(f"/diagnostics/{x}/{zs}/", DIAG[x]["nom"] + " – " + centre, DIAG[x]["titre"] + " " + dans) for x in SERVICES_ZONE if x != s] + [(f"/projets/{p['slug']}/{zs}/", p["nom"], p["h1"] + " " + dans) for p in projets_de(s)])}
+<p>{e(D['nom'])} dans les autres secteurs : {autres_zones(f"/diagnostics/{s}/", zs)}.</p>
+{("<h2>À lire sur ce sujet</h2>" + liens_art(ART_DIAG[s])) if ART_DIAG.get(s) else ""}
 {faq_html(faq)}"""
-            page(f"/diagnostics/{s}/{zs}/", f"{B.SEO[s]} {centre} | Arliane", f"{D['titre']} {dans} : obligations, chiffres locaux et intervention rapide par notre agence de Lesneven. Devis gratuit.",
-                 f"{D['titre']} {dans}", body, crumbs=[("Diagnostics", "/diagnostics/"), (D["nom"], f"/diagnostics/{s}/"), (centre, f"/diagnostics/{s}/{zs}/")], ld=[faq_ld(faq)])
+            page(f"/diagnostics/{s}/{zs}/", TITRES_ZONE[s].format(centre=centre), f"{D['titre']} {dans} : obligations, chiffres locaux, intervention rapide. Devis gratuit.",
+                 f"{D['titre']} {dans}", body, crumbs=[("Diagnostics", "/diagnostics/"), (D["nom"], f"/diagnostics/{s}/"), (centre, f"/diagnostics/{s}/{zs}/")],
+                 ld=[faq_ld(faq), {"@context": "https://schema.org", "@type": "Service", "name": f"{D['titre']} {dans}", "serviceType": D["titre"], "provider": {"@id": BASE + "/#agence"}, "areaServed": [{"@type": "City", "name": x["nom"]} for x in cs], "url": BASE + f"/diagnostics/{s}/{zs}/"}])
 
     # ---------------- hub secteurs
     blocs = "".join(f'<h2><a href="{zpath(z[0])}">{e(z[2])}</a></h2><p>{liens_communes([C[i] for i in z[4] if i in C])}.</p>' for z in ZONES)
     page("/secteurs/", "Secteurs d'intervention Nord-Finistère | Arliane Lesneven", f"Notre agence de Lesneven réalise vos diagnostics immobiliers dans {len(C)} communes du Nord-Finistère : Brest, Landerneau, Landivisiau, Morlaix, les Abers, le Léon.",
          "Nos secteurs d'intervention dans le Nord-Finistère", f"""<p class="chapo">Basés à Lesneven, nous intervenons dans tout le Nord-Finistère, de la pointe Saint-Mathieu à la baie de Morlaix.</p>
 {cartes([(zpath(z[0]), z[2], f"{nb(zd[z[0]]['n'])} DPE analysés") for z in ZONES])}{blocs}
-<p>Votre commune n'apparaît pas ? Appelez-nous au <a href="tel:{TEL_LINK}">{TEL}</a> : nous intervenons très probablement chez vous.</p>""", crumbs=[("Secteurs", "/secteurs/")])
+<p>Votre commune n'apparaît pas ? Appelez-nous au <a href="tel:{TEL_LINK}">{TEL}</a> : nous intervenons très probablement chez vous.</p>""", crumbs=[("Secteurs", "/secteurs/")], full=True)
 
     # ---------------- observatoire
     cs = sorted(C.values(), key=lambda c: -c["n"])
@@ -318,7 +473,7 @@ def build():
 <h2>Les communes les plus chauffées à l'électricité</h2><p>Ce sont celles où le <a href="/dpe-2027/">nouveau coefficient du 1er janvier 2027</a> aura le plus d'effet :</p>{top(top_elec, 'pelec')}
 <h2>Les communes au bâti le plus ancien</h2><p>Part des logements diagnostiqués construits avant 1948 :</p>{top(top_anc, 'pav48')}
 <h2>Toutes les communes</h2><div class="defile"><table><thead><tr><th scope="col">Commune</th><th scope="col">DPE</th><th scope="col">A ou B</th><th scope="col">C ou D</th><th scope="col">E</th><th scope="col">F ou G</th><th scope="col">Chauffage électrique</th><th scope="col">Avant 1948</th></tr></thead><tbody>{lig}</tbody></table></div>
-<h2>Réutiliser ces chiffres</h2><p>Ces données sont issues de la base publique de l'ADEME. Vous pouvez les reprendre librement en citant « Observatoire DPE du Nord-Finistère – Arliane Diagnostic Immobilier Lesneven ».</p>"""
+<h2>Réutiliser ces chiffres</h2><p>Ces données sont issues de la base publique de l'ADEME. Vous pouvez les reprendre librement en citant « Observatoire DPE du Nord-Finistère – Arliane Diagnostic Nord Finistère ».</p>"""
     page("/observatoire-dpe-nord-finistere/", "Observatoire DPE du Nord-Finistère : chiffres par commune | Arliane", f"{nb(tout['n'])} DPE analysés dans {len(C)} communes du Nord-Finistère : étiquettes, passoires thermiques, chauffage électrique, bâti ancien, commune par commune.",
          "Observatoire DPE du Nord-Finistère", body, crumbs=[("Observatoire DPE", "/observatoire-dpe-nord-finistere/")],
          ld=[{"@context": "https://schema.org", "@type": "Dataset", "name": "Observatoire DPE du Nord-Finistère", "description": f"Répartition des étiquettes DPE, du mode de chauffage et de la période de construction dans {len(C)} communes du Nord-Finistère.", "url": BASE + "/observatoire-dpe-nord-finistere/", "creator": {"@id": BASE + "/#agence"}, "isBasedOn": "https://data.ademe.fr/datasets/dpe03existant", "spatialCoverage": "Nord-Finistère, France", "dateModified": "2026-11-17", "license": "https://www.etalab.gouv.fr/licence-ouverte-open-licence"}])
@@ -339,16 +494,20 @@ def build():
          "Actualités du diagnostic immobilier", f'<p class="chapo">La réglementation évolue vite. Nous l\'expliquons simplement, avec les chiffres du Nord-Finistère.</p>{cartes([("/actualites/" + a["slug"] + "/", a["titre"], a["desc"]) for a in ARTICLES])}',
          crumbs=[("Actualités", "/actualites/")])
     for a in ARTICLES:
-        autres = [x for x in ARTICLES if x is not a][:3]
-        page(f"/actualites/{a['slug']}/", a["titre"], a["desc"], a["titre"],
-             a["corps"](kt) + "<h2>À lire aussi</h2>" + cartes([("/actualites/" + x["slug"] + "/", x["titre"], x["desc"]) for x in autres]),
+        autres = [x for x in ARTICLES if x is not a]
+        sv = ART_SERVICE.get(a["slug"])
+        if sv: pres = f'<h2>{e(DIAG[sv]["nom"])} près de chez vous</h2><p>' + ", ".join(f'<a href="/diagnostics/{sv}/{z[0]}/">{e(DIAG[sv]["nom"])} {e(z[1])}</a>' for z in ZONES) + f'. <a href="/diagnostics/{sv}/">Notre page {e(DIAG[sv]["titre"])}</a>.</p>'
+        else: pres = "<h2>Nos secteurs d'intervention</h2><p>" + ", ".join(f'<a href="{zpath(z[0])}">{e(z[2])}</a>' for z in ZONES) + ".</p>"
+        pres += f'<p>Diagnostic immobilier dans les villes principales : {liens_princ()}.</p>'
+        page(f"/actualites/{a['slug']}/", a["titre"] + " | Arliane", a["desc"], a["titre"],
+             a["corps"](kt) + pres + "<h2>À lire aussi</h2>" + cartes([("/actualites/" + x["slug"] + "/", x["titre"], x["desc"]) for x in autres]),
              crumbs=[("Actualités", "/actualites/"), (a["titre"], f"/actualites/{a['slug']}/")],
-             ld=[{"@context": "https://schema.org", "@type": "Article", "headline": a["titre"], "description": a["desc"], "datePublished": a["date"], "dateModified": a["date"], "author": {"@id": BASE + "/#agence"}, "publisher": {"@id": BASE + "/#agence"}, "mainEntityOfPage": BASE + f"/actualites/{a['slug']}/"}])
+             ld=[{"@context": "https://schema.org", "@type": "Article", "headline": a["titre"], "description": a["desc"], "datePublished": a["date"], "dateModified": a["date"], "image": BASE + "/assets/photos/agence-arliane-lesneven.jpg", "author": {"@id": BASE + "/#agence"}, "publisher": {"@id": BASE + "/#agence"}, "mainEntityOfPage": BASE + f"/actualites/{a['slug']}/"}])
 
     # ---------------- agence
-    PH_EQ = """<figure class="photo"><picture><source type="image/webp" srcset="/assets/photos/equipe-arliane-lesneven-640.webp 640w, /assets/photos/equipe-arliane-lesneven.webp 1200w" sizes="(max-width:700px) 100vw, 900px"><img src="/assets/photos/equipe-arliane-lesneven.jpg" width="1200" height="800" loading="lazy" alt="L'équipe de l'agence Arliane Diagnostic Immobilier de Lesneven"></picture><figcaption>L'équipe de l'agence de Lesneven</figcaption></figure>"""
-    PH_AG = """<figure class="photo etroite"><picture><source type="image/webp" srcset="/assets/photos/agence-arliane-lesneven.webp"><img src="/assets/photos/agence-arliane-lesneven.jpg" width="614" height="490" loading="lazy" alt="Façade de l'agence Arliane Diagnostic Immobilier, 15 rue Général de Gaulle à Lesneven"></picture><figcaption>Notre agence, 15 rue Général de Gaulle à Lesneven</figcaption></figure>"""
-    PH_AG0 = PH_AG.replace('loading="lazy" ', "")
+    PH_EQ = """<figure class="photo"><picture><source type="image/webp" srcset="/assets/photos/equipe-arliane-lesneven-640.webp 640w, /assets/photos/equipe-arliane-lesneven.webp 1200w" sizes="(max-width:700px) 100vw, 900px"><img src="/assets/photos/equipe-arliane-lesneven.jpg" width="1200" height="800" loading="lazy" alt="L'équipe de l'agence Arliane Diagnostic Nord Finistère, à Lesneven"></picture><figcaption>L'équipe de l'agence de Lesneven</figcaption></figure>"""
+    PH_AG = """<figure class="photo etroite"><picture><source type="image/webp" srcset="/assets/photos/agence-arliane-lesneven.webp"><img src="/assets/photos/agence-arliane-lesneven.jpg" width="614" height="490" loading="lazy" alt="Façade de l'agence Arliane Diagnostic Nord Finistère, 15 rue Général de Gaulle à Lesneven"></picture><figcaption>Notre agence, 15 rue Général de Gaulle à Lesneven</figcaption></figure>"""
+    PH_AG0 = PH_AG.replace('loading="lazy" ', 'fetchpriority="high" ')
     body = f"""<p class="chapo">« Fondée par la famille, portée par la confiance, dédiée à votre tranquillité » : c'est la devise inscrite sur notre vitrine, au cœur de Lesneven.</p>
 {PH_EQ}
 <h2>Une équipe locale à votre écoute</h2>
@@ -362,8 +521,8 @@ def build():
 {cartes([(f'/diagnostics/{d["slug"]}/', d["nom"], d["intro"].split(". ")[0].rstrip(".") + ".") for d in DIAGS])}
 <h2>Où nous intervenons</h2>
 {cartes([(zpath(z[0]), z[2], f"{len([i for i in z[4] if i in C])} communes desservies") for z in ZONES])}"""
-    page("/agence/", "Notre agence et notre équipe | Arliane Diagnostic Immobilier Lesneven", "Découvrez l'équipe et l'agence Arliane Diagnostic Immobilier de Lesneven : diagnostiqueurs certifiés, accueil en centre-ville, interventions dans tout le Nord-Finistère.",
-         "Notre agence de Lesneven et son équipe", body, crumbs=[("Notre agence", "/agence/")])
+    page("/agence/", f"Notre agence de Lesneven et notre équipe | {B.NOM}", f"Découvrez l'équipe et l'agence {B.NOM} à Lesneven : diagnostiqueurs immobiliers certifiés, accueil en centre-ville, interventions dans tout le Nord-Finistère.",
+         "Notre agence de Lesneven et son équipe", body, crumbs=[("Notre agence", "/agence/")], full=True)
 
     # ---------------- accueil
     faq = [("Quels diagnostics sont obligatoires pour vendre ?", "Cela dépend de l'âge du bien, de son type et de sa localisation. Le DPE et l'état des risques sont toujours requis ; s'y ajoutent selon les cas l'amiante, le plomb, l'électricité, le gaz, l'état parasitaire, le mesurage loi Carrez et l'audit énergétique. <a href=\"/quels-diagnostics/\">Obtenez la liste pour votre bien</a>."),
@@ -371,7 +530,7 @@ def build():
            ("Réalisez-vous les audits énergétiques, les DTG et les PPPT ?", "Oui. Nous réalisons l'<a href=\"/diagnostics/audit-energetique/\">audit énergétique réglementaire</a> et, pour les copropriétés, le <a href=\"/diagnostics/pppt/\">PPPT</a>, le <a href=\"/diagnostics/dtg/\">DTG</a> et le <a href=\"/diagnostics/dpe-collectif/\">DPE collectif</a>."),
            ("Dans quelles communes intervenez-vous ?", f"Dans tout le Nord-Finistère : Lesneven, Brest, Landerneau, Landivisiau, Plabennec, Lannilis, Saint-Pol-de-Léon, Saint-Renan, Morlaix et les communes voisines. <a href=\"/secteurs/\">Voir les {len(C)} communes</a>."),
            ("Intervenez-vous pour les professionnels ?", "Oui : agences immobilières, notaires, syndics de copropriété, bailleurs et entreprises de travaux. <a href=\"/professionnels/\">Voir notre accompagnement des professionnels</a>.")]
-    body = f"""<p class="chapo">Vous vendez, vous louez, vous préparez des travaux ou vous gérez une copropriété ? Notre agence de Lesneven réalise tous vos diagnostics immobiliers dans le Nord-Finistère : DPE, audit énergétique, amiante, plomb, électricité, gaz, DTG et PPPT.</p>
+    body = f"""<p class="chapo">Vous vendez, vous louez, vous préparez des travaux ou vous gérez une copropriété ? Notre agence de Lesneven et ses diagnostiqueurs immobiliers certifiés réalisent tous vos diagnostics dans le Nord-Finistère, de <a href="/secteurs/lesneven/">Lesneven</a> à <a href="/secteurs/brest/">Brest</a> en passant par <a href="/secteurs/plabennec/">Plabennec</a> : DPE, audit énergétique, amiante, plomb, électricité, gaz, DTG et PPPT.</p>
 <p><a class="btn" href="tel:{TEL_LINK}">📞 {TEL}</a> <a class="btn clair" href="/devis/">Demander un devis gratuit</a></p>
 {B.AVIS}
 {PH_AG0}
@@ -396,10 +555,11 @@ def build():
 <h2>Nous intervenons près de chez vous</h2>
 {cartes([(zpath(z[0]), z[2], f"{len([i for i in z[4] if i in C])} communes desservies") for z in ZONES])}
 <p class="communes">{liens_communes(sorted(C.values(), key=lambda c: c["slug"]))}</p>
-<h2>L'actualité du diagnostic</h2>{cartes([("/actualites/" + a["slug"] + "/", a["titre"], a["desc"]) for a in ARTICLES[:3]])}
+<h2>L'actualité du diagnostic</h2>{cartes([("/actualites/" + a["slug"] + "/", a["titre"], a["desc"]) for a in ARTICLES])}
 {faq_html(faq)}"""
-    page("/", "Diagnostic immobilier Lesneven, Brest, Nord-Finistère | Arliane", "Diagnostics immobiliers à Lesneven et dans le Nord-Finistère : DPE, audit énergétique, amiante, plomb, électricité, gaz, DTG, PPPT. Devis gratuit, rendez-vous rapide.",
-         "Diagnostic immobilier à Lesneven et dans le Nord-Finistère", body, ld=[faq_ld(faq)])
+    page("/", "Diagnostic immobilier Lesneven, Brest, Nord-Finistère | Arliane", "Diagnostiqueur immobilier à Lesneven, Brest, Plabennec et dans tout le Nord-Finistère : DPE, audit énergétique, amiante, plomb, électricité, gaz, DTG, PPPT. Devis gratuit, rendez-vous rapide.",
+         "Diagnostic immobilier à Lesneven et dans le Nord-Finistère", body, full=True,
+         ld=[faq_ld(faq), {"@context": "https://schema.org", "@type": "WebSite", "@id": BASE + "/#site", "url": BASE + "/", "name": B.NOM, "alternateName": B.RAISON, "inLanguage": "fr-FR", "publisher": {"@id": BASE + "/#agence"}}])
     return B.finalize()
 
 if __name__ == "__main__":

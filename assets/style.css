@@ -1,4 +1,4 @@
-:root{--vert:#7ab036;--accent:#5f8f24;--accent-fonce:#4c741c;--texte:#2b3033;--gris:#5f6466;--bord:#e2e6e0;--fond:#f6f8f3}
+:root{--vert:#7ab036;--accent:#4c741c;--accent-fonce:#3a5a14;--texte:#2b3033;--gris:#5f6466;--bord:#e2e6e0;--fond:#f6f8f3}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;font-family:Poppins,Verdana,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--texte);line-height:1.6;font-size:1rem;background:#fff}

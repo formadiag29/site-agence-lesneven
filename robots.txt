@@ -1,4 +1,23 @@
+# Arliane Diagnostic Nord Finistère - https://www.sas-liberge.fr
+# Moteurs de recherche et moteurs de recherche des assistants IA : autorisés
 User-agent: *
 Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# ChatGPT Search (OpenAI) : indexation pour la recherche, et consultation à la demande d'un utilisateur
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Entraînement des modèles d'OpenAI : refusé (sans effet sur ChatGPT Search)
+User-agent: GPTBot
+Disallow: /
 
 Sitemap: https://www.sas-liberge.fr/sitemap.xml

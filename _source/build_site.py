@@ -1,18 +1,38 @@
 #!/usr/bin/env python3
 """Génère le site statique de l'agence Arliane Diagnostic Immobilier – Lesneven."""
-import json, os, re, shutil, html
+import hashlib, json, os, re, shutil, html
 from datetime import date
 
 BASE = "https://www.sas-liberge.fr"
-OUT = "/home/claude/site-agence"
-NOM = "Arliane Diagnostic Immobilier – Lesneven"
+SRC = os.path.dirname(os.path.abspath(__file__))
+OUT = os.environ.get("SITE_OUT", os.path.join(os.path.dirname(SRC), "_build"))
+NOM = "Arliane Diagnostic Nord Finistère"   # nom commercial, identique partout sur le site
+RAISON = "SAS LIBERGE"                      # raison sociale
+AUTRES_NOMS = ["Arliane Diagnostic Immobilier", "Arliane Diagnostic Immobilier Finistere", "Arliane Nord Finistère"]  # enseigne du réseau, fiche Google, ancien site
+GEO = (48.5714757, -4.3261071)             # 15 rue Général de Gaulle, Lesneven (fiche Google de l'agence)
+ANCIEN_SITE = "https://www.arliane-nord-finistere.fr/"
+RESEAU = "https://diagnostic-immobilier-arliane.fr/"
+# Mentions légales : ne renseigner que des informations exactes. Un champ vide n'est pas affiché.
+LEGAL = dict(
+    capital="5 000 €",                      # source : ancien site arliane-nord-finistere.fr et registre du commerce
+    siren="830 354 775",
+    siret="830 354 775 00017",              # siège, Lanarvily
+    rcs="830 354 775 R.C.S. Brest",
+    tva="FR62830354775",
+    assureur="",                            # À RENSEIGNER : assureur responsabilité civile professionnelle
+    police="",                              # À RENSEIGNER : n° de police
+    certifications="",                      # À RENSEIGNER : organisme(s) de certification et n° de certificat des diagnostiqueurs
+)
+COMMUNES_LD = []   # rempli par build_v2 : communes desservies
+extra_diag = lambda slug: ""   # remplacé par build_v2 : maillage des pages prestations
 TEL = "02 98 46 39 01"
 TEL_LINK = "+33298463901"
 MAIL = "accueil@sas-liberge.fr"
 RUE, CP, VILLE = "15 rue Général de Gaulle", "29260", "Lesneven"
 LOGO = "https://diagnostic-immobilier-arliane.fr/wp-content/themes/ARLIANE/images/logo-arliane.png"
 DEVIS = "/devis/"
-TODAY = date.today().isoformat()
+TODAY = os.environ.get("SITE_DATE") or date.today().isoformat()
+INDEXNOW_KEY = "37ab2f5925262c4294b5bf5b411158ce"
 AVIS_URL = "https://share.google/TphOHGbXyvr36DbpX"
 FICHE_LAN = "https://share.google/anPsgZyXMJUAxXIOB"
 FICHES = f'<p class="fiches">Retrouvez-nous sur Google : <a href="{AVIS_URL}" rel="noopener">fiche de l\'agence de Lesneven</a> · <a href="{FICHE_LAN}" rel="noopener">fiche de Lanarvily</a></p>'
@@ -21,7 +41,7 @@ AVIS = f'<p class="avis"><span class="etoiles" aria-hidden="true">★★★★�
 # ---------------------------------------------------------------- contenus
 DIAGS = [
  dict(slug="dpe", nom="DPE", titre="Diagnostic de performance énergétique (DPE)",
-  desc="DPE à Lesneven et dans le Nord-Finistère : obligatoire pour vendre ou louer, valable 10 ans. Intervention rapide, rapport clair. Devis gratuit.",
+  desc="DPE à Lesneven, Brest et dans tout le Nord-Finistère : obligatoire pour vendre ou louer, valable 10 ans. Diagnostiqueurs certifiés, intervention rapide. Devis gratuit.",
   intro="Le DPE classe votre logement de A à G selon sa consommation d'énergie et ses émissions de gaz à effet de serre. Il est obligatoire pour toute vente et toute mise en location, et son étiquette doit figurer dès l'annonce immobilière.",
   quand=["Vente d'une maison ou d'un appartement", "Mise en location ou renouvellement de bail", "Affichage obligatoire de l'étiquette dans l'annonce"],
   validite="10 ans. Les DPE réalisés avant le 1er juillet 2021 ne sont plus valables.",
@@ -96,7 +116,7 @@ DIAGS = [
   prepa=["Adresse précise et références cadastrales du bien"],
   faq=[("L'ERP doit-il être refait pour chaque locataire ?", "Il doit avoir moins de 6 mois à la signature du bail ou de la promesse de vente."),]),
  dict(slug="audit-energetique", nom="Audit énergétique", titre="Audit énergétique réglementaire",
-  desc="Audit énergétique obligatoire pour vendre une maison classée E, F ou G à Lesneven, Brest et dans le Nord-Finistère. Scénarios de travaux chiffrés.",
+  desc="Audit énergétique réglementaire dans le Finistère Nord : obligatoire pour vendre une maison classée E, F ou G à Lesneven, Brest, Landerneau. Scénarios de travaux chiffrés.",
   intro="L'audit énergétique va plus loin que le DPE : il propose des scénarios de travaux chiffrés pour amener le logement vers une meilleure classe énergétique. Il est obligatoire pour vendre les maisons et immeubles en monopropriété les plus énergivores.",
   quand=["Vente d'une maison individuelle ou d'un immeuble en monopropriété classé F ou G (depuis le 1er avril 2023)", "Vente d'un bien classé E (depuis le 1er janvier 2025)", "Vente d'un bien classé D à partir du 1er janvier 2034", "Projet de rénovation globale, pour choisir les bons travaux"],
   validite="5 ans.",
@@ -174,6 +194,20 @@ TABLEAU = [
  ("Audit énergétique", "audit-energetique", "Maisons et monopropriétés classées E, F ou G", "5 ans", "Non requis"),
 ]
 
+TITRES = {
+ 'dpe': 'DPE Lesneven, Brest, Nord-Finistère : diagnostic de performance énergétique | Arliane',
+ 'amiante': 'Diagnostic amiante Lesneven, Brest, Nord-Finistère : vente, location, travaux | Arliane',
+ 'plomb': 'Diagnostic plomb (CREP) Lesneven, Brest, Nord-Finistère | Arliane',
+ 'electricite': 'Diagnostic électricité Lesneven, Brest, Nord-Finistère | Arliane',
+ 'gaz': 'Diagnostic gaz Lesneven, Brest, Nord-Finistère | Arliane',
+ 'etat-parasitaire': 'État parasitaire et mérule Lesneven, Brest, Nord-Finistère | Arliane',
+ 'loi-carrez-boutin': 'Mesurage loi Carrez et Boutin Lesneven, Brest, Nord-Finistère | Arliane',
+ 'erp': 'État des risques (ERP) Lesneven, Brest, Nord-Finistère | Arliane',
+ 'audit-energetique': 'Audit énergétique Finistère Nord : Lesneven, Brest, Landerneau | Arliane',
+ 'pppt': 'PPPT copropriété Brest, Lesneven, Nord-Finistère : plan pluriannuel de travaux | Arliane',
+ 'dtg': 'Diagnostic technique global (DTG) Brest, Lesneven, Nord-Finistère | Arliane',
+ 'dpe-collectif': 'DPE collectif Brest, Lesneven, Nord-Finistère : immeubles et copropriétés | Arliane',
+}
 SEO = {'dpe': 'Diagnostic DPE', 'amiante': 'Diagnostic amiante', 'plomb': 'Diagnostic plomb (CREP)', 'electricite': 'Diagnostic électricité', 'gaz': 'Diagnostic gaz', 'etat-parasitaire': 'État parasitaire et mérule', 'loi-carrez-boutin': 'Mesurage loi Carrez et Boutin', 'erp': 'État des risques (ERP)', 'audit-energetique': 'Audit énergétique', 'pppt': 'PPPT copropriété', 'dtg': 'Diagnostic technique global (DTG)', 'dpe-collectif': 'DPE collectif'}
 
 # ---------------------------------------------------------------- gabarit
@@ -184,17 +218,31 @@ ZONES_PIED = []  # rempli par build_v2
 e = html.escape
 pages = []  # (chemin, titre) pour sitemap et contrôles
 
-def business_ld():
-    return {"@context": "https://schema.org", "@type": "LocalBusiness", "@id": BASE + "/#agence", "name": NOM,
-            "url": BASE + "/", "telephone": "+33 2 98 46 39 01", "email": MAIL, "image": [BASE + "/assets/photos/agence-arliane-lesneven.jpg", LOGO], "hasMap": AVIS_URL,
-            "address": {"@type": "PostalAddress", "streetAddress": RUE, "postalCode": CP, "addressLocality": VILLE, "addressRegion": "Bretagne", "addressCountry": "FR"},
-            "areaServed": ["Lesneven", "Brest", "Landerneau", "Landivisiau", "Plabennec", "Lannilis", "Saint-Pol-de-Léon", "Saint-Renan", "Morlaix", "Nord-Finistère"],
-            "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": o, "closes": c} for o, c in (("09:00", "12:00"), ("14:00", "18:00"))]}
+PRINCIPALES = ["Lesneven", "Brest", "Landerneau", "Landivisiau", "Plabennec", "Lannilis", "Saint-Pol-de-Léon", "Saint-Renan", "Morlaix"]
+def business_ld(full=False):
+    """Fiche de l'établissement. full=True (accueil, agence, contact, secteurs) : toutes les communes et le catalogue des prestations."""
+    d = {"@context": "https://schema.org", "@type": ["LocalBusiness", "ProfessionalService"], "@id": BASE + "/#agence", "name": NOM,
+         "alternateName": AUTRES_NOMS, "legalName": RAISON,
+         "description": "Cabinet de diagnostic immobilier à Lesneven : DPE, audit énergétique, amiante, plomb, électricité, gaz, état parasitaire, mesurage, état des risques, DTG et PPPT dans le Nord-Finistère.",
+         "url": BASE + "/", "telephone": "+33 2 98 46 39 01", "email": MAIL, "image": [BASE + "/assets/photos/agence-arliane-lesneven.jpg", BASE + "/assets/photos/equipe-arliane-lesneven.jpg"], "logo": LOGO,
+         "hasMap": AVIS_URL, "sameAs": [AVIS_URL, FICHE_LAN, ANCIEN_SITE],
+         "address": {"@type": "PostalAddress", "streetAddress": RUE, "postalCode": CP, "addressLocality": VILLE, "addressRegion": "Bretagne", "addressCountry": "FR"},
+         "geo": {"@type": "GeoCoordinates", "latitude": GEO[0], "longitude": GEO[1]},
+         "areaServed": [{"@type": "City", "name": n} for n in PRINCIPALES] + [{"@type": "AdministrativeArea", "name": "Nord-Finistère"}],
+         "memberOf": {"@type": "Organization", "name": "Arliane Diagnostic Immobilier", "url": RESEAU},
+         "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": o, "closes": c} for o, c in (("09:00", "12:00"), ("14:00", "18:00"))]}
+    if LEGAL["siret"]: d["identifier"] = {"@type": "PropertyValue", "propertyID": "SIRET", "value": LEGAL["siret"].replace(" ", "")}
+    if LEGAL["tva"]: d["vatID"] = LEGAL["tva"]
+    if full:
+        d["areaServed"] = [{"@type": "City", "name": n} for n in (COMMUNES_LD or PRINCIPALES)] + [{"@type": "AdministrativeArea", "name": "Nord-Finistère"}]
+        d["hasOfferCatalog"] = {"@type": "OfferCatalog", "name": "Diagnostics immobiliers", "itemListElement": [
+            {"@type": "Offer", "itemOffered": {"@type": "Service", "name": x["titre"], "url": BASE + f"/diagnostics/{x['slug']}/"}} for x in DIAGS]}
+    return d
 
-def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head=""):
+def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head="", full=False):
     """path : '/dpe/' -> écrit dpe/index.html"""
     url = BASE + path
-    lds = [business_ld()] + (ld or [])
+    lds = [business_ld(full)] + (ld or [])
     if crumbs:
         items = [("Accueil", "/")] + crumbs
         lds.append({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
@@ -224,7 +272,7 @@ def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head=""):
 <meta property="og:image:width" content="614">
 <meta property="og:image:height" content="490">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#5f8f24">
+<meta name="theme-color" content="#4c741c">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -234,7 +282,7 @@ def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head=""):
 <a class="saut" href="#contenu">Aller au contenu</a>
 <header class="haut">
 <div class="large barre">
-<a class="logo" href="/" aria-label="{e(NOM)} – accueil"><img src="{LOGO}" alt="Arliane Diagnostic Immobilier" width="186" height="48" onerror="this.outerHTML='<strong>Arliane Diagnostic Immobilier</strong>'"><span>Agence de Lesneven</span></a>
+<a class="logo" href="/" aria-label="{e(NOM)} – accueil"><img src="{LOGO}" alt="Arliane Diagnostic Immobilier" width="186" height="48" onerror="this.outerHTML='<strong>Arliane Diagnostic Immobilier</strong>'"><span>Nord Finistère · agence de Lesneven</span></a>
 <a class="btn tel" href="tel:{TEL_LINK}">📞 {TEL}</a>
 </div>
 <nav class="menu" aria-label="Menu principal"><div class="large">{nav}</div></nav>
@@ -269,7 +317,7 @@ def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head=""):
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     open(dest, "w", encoding="utf8").write(doc)
     if path != "/404.html":
-        pages.append((path, title, desc))
+        pages.append((path, title, desc, hashlib.sha1((title + desc + h1 + body).encode("utf8")).hexdigest()[:16]))
 
 def ul(items): return "<ul>" + "".join(f"<li>{x}</li>" for x in items) + "</ul>"
 def _svg(inner): return f'<svg class="ico" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{inner}</svg>'
@@ -299,7 +347,7 @@ def faq_ld(faq): return {"@context": "https://schema.org", "@type": "FAQPage", "
 def build():
     shutil.rmtree(OUT, ignore_errors=True)
     os.makedirs(OUT + "/assets")
-    shutil.copy("/home/claude/style_site.css", OUT + "/assets/style.css")
+    shutil.copy(SRC + "/style_site.css", OUT + "/assets/style.css")
     cartes_diag = [(f'/diagnostics/{d["slug"]}/', d["nom"], d["intro"].split(". ")[0].rstrip(".") + ".") for d in DIAGS]
     cartes_villes = [(f'/secteurs/{v["slug"]}/', v["nom"], "Diagnostics immobiliers à " + v["nom"].split(" et ")[0]) for v in VILLES]
 
@@ -334,16 +382,17 @@ def build():
     for d in DIAGS:
         autres = [x for x in DIAGS if x is not d][:4]
         body = f"""<p class="chapo">{d['intro']}</p>
-<div class="fiche"><div><strong>Durée de validité</strong><p>{d['validite']}</p></div><div><strong>Zone d'intervention</strong><p>Lesneven, Brest, Landerneau, Plabennec, Landivisiau et tout le Nord-Finistère.</p></div></div>
+<div class="fiche"><div><strong>Durée de validité</strong><p>{d['validite']}</p></div><div><strong>Zone d'intervention</strong><p><a href="/secteurs/lesneven/">Lesneven</a>, <a href="/secteurs/brest/">Brest</a>, <a href="/secteurs/landerneau/">Landerneau</a>, <a href="/secteurs/plabennec/">Plabennec</a>, <a href="/secteurs/landivisiau/">Landivisiau</a> et <a href="/secteurs/">tout le Nord-Finistère</a>.</p></div></div>
 <h2>Quand est-il obligatoire ?</h2>{ul(d['quand'])}
 {"".join(f"<h2>{e(t)}</h2><p>{c}</p>" for t, c in d['plus'])}
 <h2>Comment préparer la visite ?</h2><p>Pour un diagnostic précis, pensez à préparer :</p>{ul(d['prepa'])}
 <p><a class="btn" href="{DEVIS}">Demander un devis pour ce diagnostic</a></p>
 {faq_html(d['faq'])}
+{extra_diag(d['slug'])}
 <h2>Autres diagnostics</h2>{cartes([(f'/diagnostics/{x["slug"]}/', x["nom"], x["titre"]) for x in autres])}"""
-        page(f"/diagnostics/{d['slug']}/", f"{SEO[d['slug']]} à Lesneven | Arliane", d["desc"], d["titre"] + " à Lesneven et dans le Nord-Finistère", body,
+        page(f"/diagnostics/{d['slug']}/", TITRES[d['slug']], d["desc"], d["titre"] + " à Lesneven et dans le Nord-Finistère", body,
              crumbs=[("Diagnostics", "/diagnostics/"), (d["nom"], f"/diagnostics/{d['slug']}/")],
-             ld=[faq_ld(d["faq"]), {"@context": "https://schema.org", "@type": "Service", "name": d["titre"], "serviceType": d["titre"], "provider": {"@id": BASE + "/#agence"}, "areaServed": "Nord-Finistère", "url": BASE + f"/diagnostics/{d['slug']}/"}])
+             ld=[faq_ld(d["faq"]), {"@context": "https://schema.org", "@type": "Service", "name": d["titre"], "serviceType": d["titre"], "description": d["desc"], "provider": {"@id": BASE + "/#agence"}, "areaServed": [{"@type": "City", "name": n} for n in PRINCIPALES] + [{"@type": "AdministrativeArea", "name": "Nord-Finistère"}], "url": BASE + f"/diagnostics/{d['slug']}/"}])
 
     # ---- secteurs
     page("/secteurs/", "Secteurs d'intervention Nord-Finistère | Arliane Lesneven", "Notre agence de Lesneven réalise vos diagnostics immobiliers à Brest, Landerneau, Plabennec, Landivisiau, Lannilis et dans tout le Nord-Finistère.",
@@ -388,7 +437,7 @@ def build():
          "Diagnostics immobiliers pour les professionnels", body, crumbs=[("Professionnels", "/professionnels/")])
 
     # ---- simulateur DPE 2027
-    src = open("/home/claude/site/index.html", encoding="utf8").read()
+    src = open(SRC + "/simulateur-dpe-2027.html", encoding="utf8").read()
     bloc = src[src.index('<div id="dpe2027">'):src.rindex("</div>") + 6]
     faq = [("D'où viennent les données ?", "Le simulateur interroge la base publique des DPE de l'ADEME à partir du numéro saisi. Aucune donnée n'est enregistrée par notre agence."),
            ("Le résultat est-il officiel ?", "Non, il s'agit d'une estimation. L'attestation officielle de nouvelle étiquette sera téléchargeable gratuitement sur l'Observatoire DPE-Audit de l'ADEME à partir du 1er janvier 2027."),
@@ -425,19 +474,22 @@ def build():
 <div><strong>Par e-mail</strong><p><a href="mailto:{MAIL}">{MAIL}</a></p></div>
 <div><strong>À l'agence</strong><p>{RUE}<br>{CP} {VILLE}</p><p><a href="https://www.google.com/maps/search/?api=1&query={(RUE + ' ' + CP + ' ' + VILLE).replace(' ', '+')}" rel="noopener">Voir l'itinéraire</a></p></div>
 </div>
-<figure class="photo etroite"><picture><source type="image/webp" srcset="/assets/photos/agence-arliane-lesneven.webp"><img src="/assets/photos/agence-arliane-lesneven.jpg" width="614" height="490" loading="lazy" alt="Façade de l'agence Arliane Diagnostic Immobilier à Lesneven"></picture><figcaption>Notre agence, 15 rue Général de Gaulle à Lesneven</figcaption></figure>
+<figure class="photo etroite"><picture><source type="image/webp" srcset="/assets/photos/agence-arliane-lesneven.webp"><img src="/assets/photos/agence-arliane-lesneven.jpg" width="614" height="490" loading="lazy" alt="Façade de l'agence Arliane Diagnostic Nord Finistère à Lesneven"></picture><figcaption>Notre agence, 15 rue Général de Gaulle à Lesneven</figcaption></figure>
 {FICHES}
 <h2>Zone d'intervention</h2><p>Lesneven, Brest, Landerneau, Plabennec, Landivisiau, Lannilis et l'ensemble du Nord-Finistère. <a href="/secteurs/">Voir nos secteurs</a>.</p>"""
-    page("/contact/", "Contact et horaires | Arliane Diagnostic Immobilier Lesneven", "Contactez notre agence de diagnostic immobilier à Lesneven : 02 98 46 39 01, 15 rue Général de Gaulle. Du lundi au vendredi, 9h-12h et 14h-18h.",
-         "Contacter l'agence de Lesneven", body, crumbs=[("Contact", "/contact/")])
+    page("/contact/", f"Contact et horaires | {NOM}, Lesneven", "Contactez notre agence de diagnostic immobilier à Lesneven : 02 98 46 39 01, 15 rue Général de Gaulle. Du lundi au vendredi, 9h-12h et 14h-18h.",
+         "Contacter l'agence de Lesneven", body, crumbs=[("Contact", "/contact/")], full=True)
 
     # ---- mentions légales
-    body = f"""<h2>Éditeur du site</h2><p>SAS Liberge, exerçant sous l'enseigne Arliane Diagnostic Immobilier<br>Siège social : 36 Penarguear, 29260 Lanarvily<br>Agence : {RUE}, {CP} {VILLE}<br>Téléphone : {TEL} – E-mail : {MAIL}<br>Forme juridique : société par actions simplifiée<br>Capital social : [À COMPLÉTER]<br>SIREN : [À COMPLÉTER] – RCS : [À COMPLÉTER]<br>N° de TVA intracommunautaire : [À COMPLÉTER]<br>Directeur de la publication : Julien Liberge</p>
-<h2>Assurance et certifications</h2><p>Assurance responsabilité civile professionnelle : [ASSUREUR ET N° DE POLICE À COMPLÉTER]<br>Les diagnostiqueurs de l'agence sont certifiés par un organisme accrédité : [ORGANISMES ET N° DE CERTIFICATION À COMPLÉTER]</p>
+    def ligne(lib, val): return f"<br>{lib} : {e(val)}" if val else ""
+    assur = ligne("Assurance responsabilité civile professionnelle", " – police n° ".join(x for x in (LEGAL["assureur"], LEGAL["police"]) if x))
+    certif = ligne("Certification des diagnostiqueurs", LEGAL["certifications"])
+    body = f"""<h2>Éditeur du site</h2><p>{RAISON}, exerçant sous le nom commercial {e(NOM)}, membre du réseau Arliane Diagnostic Immobilier<br>Siège social : 36 Penarguear, 29260 Lanarvily<br>Agence : {RUE}, {CP} {VILLE}<br>Téléphone : {TEL} – E-mail : {MAIL}<br>Forme juridique : société par actions simplifiée{ligne("Capital social", LEGAL["capital"])}{ligne("SIREN", LEGAL["siren"])}{ligne("SIRET du siège", LEGAL["siret"])}{ligne("RCS", LEGAL["rcs"])}{ligne("N° de TVA intracommunautaire", LEGAL["tva"])}<br>Directeur de la publication : Julien Liberge</p>
+<h2>Assurance et certifications</h2><p>Les diagnostics sont réalisés par des diagnostiqueurs certifiés par un organisme accrédité et couverts par une assurance de responsabilité civile professionnelle, comme l'exige la réglementation.{assur}{certif}</p>
 <h2>Hébergement</h2><p>GitHub Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis.</p>
 <h2>Données personnelles</h2><p>Ce site n'utilise ni cookie de suivi ni outil de mesure d'audience. Le simulateur DPE 2027 transmet le numéro ADEME saisi à la base publique de l'ADEME ; il n'est pas enregistré par notre agence. Les informations que vous nous communiquez par téléphone ou par e-mail servent uniquement à traiter votre demande. Vous pouvez exercer vos droits d'accès, de rectification et de suppression en écrivant à {MAIL}.</p>
 <h2>Propriété intellectuelle</h2><p>Arliane est une marque du réseau Arliane Diagnostic Immobilier. Les contenus de ce site ne peuvent être reproduits sans autorisation.</p>"""
-    page("/mentions-legales/", "Mentions légales | Arliane Diagnostic Immobilier Lesneven", "Mentions légales du site de l'agence Arliane Diagnostic Immobilier de Lesneven : éditeur, hébergeur, données personnelles.",
+    page("/mentions-legales/", f"Mentions légales | {NOM}", f"Mentions légales du site {NOM} ({RAISON}), agence de diagnostic immobilier à Lesneven : éditeur, hébergeur, données personnelles.",
          "Mentions légales", body, crumbs=[("Mentions légales", "/mentions-legales/")])
 
     return pages
@@ -448,17 +500,45 @@ def finalize():
     for p in pages: vu[p[0]] = p
     pages = list(vu.values())
     # ---- 404, sitemap, robots, CNAME
-    page("/404.html", "Page introuvable | Arliane Diagnostic Immobilier Lesneven", "Cette page n'existe pas ou a été déplacée.", "Page introuvable",
+    page("/404.html", f"Page introuvable | {NOM}", "Cette page n'existe pas ou a été déplacée.", "Page introuvable",
          f"<p>Cette page n'existe pas ou a été déplacée.</p><p><a class=\"btn\" href=\"/\">Retour à l'accueil</a></p>", extra_head='<meta name="robots" content="noindex">\n')
+    # dates de dernière modification réelles : une page garde sa date tant que son contenu ne change pas
+    lm_file = SRC + "/lastmod.json"
+    old = json.load(open(lm_file, encoding="utf8")) if os.path.exists(lm_file) else {}
+    lm = {p: (old[p] if p in old and old[p][0] == h else [h, TODAY]) for p, _, _, h in pages}
+    json.dump(lm, open(lm_file, "w", encoding="utf8"), indent=0, sort_keys=True)
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "".join(
-        f"<url><loc>{BASE}{p}</loc><lastmod>{TODAY}</lastmod></url>\n" for p, _, _ in pages) + "</urlset>\n"
+        f"<url><loc>{BASE}{p}</loc><lastmod>{lm[p][1]}</lastmod></url>\n" for p, _, _, _ in pages) + "</urlset>\n"
     open(OUT + "/sitemap.xml", "w").write(sm)
-    open(OUT + "/robots.txt", "w").write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}/sitemap.xml\n")
+    open(OUT + "/robots.txt", "w", encoding="utf8").write(f"""# {NOM} - {BASE}
+# Moteurs de recherche et moteurs de recherche des assistants IA : autorisés
+User-agent: *
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# ChatGPT Search (OpenAI) : indexation pour la recherche, et consultation à la demande d'un utilisateur
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Entraînement des modèles d'OpenAI : refusé (sans effet sur ChatGPT Search)
+User-agent: GPTBot
+Disallow: /
+
+Sitemap: {BASE}/sitemap.xml
+""")
     open(OUT + "/CNAME", "w").write("www.sas-liberge.fr\n")
     open(OUT + "/.nojekyll", "w").write("")
-    for f in ("favicon.ico", "icon-192.png", "apple-touch-icon.png"): shutil.copy("/home/claude/favicons/" + f, OUT + "/" + f)
+    for f in ("favicon.ico", "icon-192.png", "apple-touch-icon.png"): shutil.copy(SRC + "/favicons/" + f, OUT + "/" + f)
     open(OUT + "/google095ac99d20450d98.html", "w").write("google-site-verification: google095ac99d20450d98.html")
-    k = open("/home/claude/indexnow_key.txt").read().strip(); open(OUT + f"/{k}.txt", "w").write(k)
+    k = INDEXNOW_KEY; open(OUT + f"/{k}.txt", "w").write(k)
     return pages
 
 if __name__ == "__main__":
