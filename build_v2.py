@@ -454,12 +454,12 @@ def page_dpe_brest(C, zd, cs, dans, lib, centre):
     brest = [c for c in C.values() if c["nom"] == "Brest"][0]; kb = chiffres(brest)
     stats = (f"<h2>Le DPE à Brest en chiffres</h2>{tuiles(brest, kb)}{barres(brest)}{SRC}" if CHIFFRES_BREST_VERIFIES else "")
     etapes = ('<div class="atouts"><div><strong>1. Un appel</strong><p>Nous vérifions avec vous les diagnostics réellement nécessaires pour votre vente ou votre location.</p></div>'
-              '<div><strong>2. La visite</strong><p>Environ une heure pour un appartement, une à deux heures pour une maison : relevé des surfaces, des murs, des fenêtres, du chauffage, de l\'eau chaude et de la ventilation.</p></div>'
-              '<div><strong>3. Le rapport</strong><p>Il vous est envoyé par e-mail. Le DPE est enregistré auprès de l\'ADEME, qui lui attribue un numéro, et il est valable dix ans.</p></div></div>')
+              '<div><strong>2. La visite</strong><p>Relevé des surfaces, des murs, des fenêtres, du chauffage, de l\'eau chaude et de la ventilation. À titre indicatif, comptez environ une heure pour un appartement et une à deux heures pour une maison, selon la surface et la complexité du logement.</p></div>'
+              '<div><strong>3. Le rapport</strong><p>Le DPE est enregistré auprès de l\'ADEME, qui lui attribue un numéro, et il est valable dix ans. Le rapport vous est transmis par e-mail après règlement de la prestation.</p></div></div>')
     faq = [("Mon immeuble brestois a un chauffage collectif : que dois-je fournir ?", "Les caractéristiques de l'installation collective, que le syndic peut vous transmettre : type et année de la chaudière ou de la sous-station, contrat d'entretien. Si l'immeuble dispose d'un DPE collectif, joignez-le : il aide le diagnostiqueur, sans dispenser du DPE de votre logement."),
            ("Mon studio a été classé F avant juillet 2024 : cette étiquette est-elle toujours valable ?", "Les seuils ont été adaptés au 1er juillet 2024 pour les logements de 40 m² ou moins. Si le DPE a été établi avant cette date, l'ADEME peut délivrer une attestation de nouvelle étiquette à partir du numéro du DPE, sans nouveau diagnostic. L'étiquette ne change pas dans tous les cas."),
-           ("Faut-il un audit énergétique pour vendre un appartement à Brest ?", "Non. L'audit énergétique ne concerne que les maisons individuelles et les immeubles en monopropriété classés E, F ou G. Aucun audit n'est donc requis pour un appartement ; le DPE reste obligatoire, avec les autres diagnostics de la vente."),
-           ("Combien de temps dure la visite ?", "Comptez environ une heure pour un appartement et une à deux heures pour une maison, selon la surface et les équipements.")]
+           ("Faut-il un audit énergétique pour vendre un appartement à Brest ?", "Non lorsque l'appartement est vendu comme lot de copropriété : l'audit énergétique réglementaire ne s'applique pas aux lots de copropriété. Il concerne les maisons individuelles et les immeubles vendus en monopropriété, lorsqu'ils sont classés E, F ou G. Le DPE reste obligatoire, avec les autres diagnostics de la vente."),
+           ("Combien de temps dure la visite ?", "À titre indicatif, environ une heure pour un appartement et une à deux heures pour une maison. La durée réelle dépend de la surface et de la complexité du logement.")]
     body = f"""<p class="chapo">Vous vendez ou vous louez un logement à Brest ? Le DPE est obligatoire et son étiquette doit figurer dès l'annonce. Nos diagnostiqueurs, certifiés par Abcidia Certification, le réalisent à Brest et dans toute la métropole.</p>
 {BTN}
 {devis_p("Demander un devis pour un DPE à Brest", "DPE Brest")}
@@ -468,12 +468,12 @@ def page_dpe_brest(C, zd, cs, dans, lib, centre):
 {ul(['<strong>Chauffage ou eau chaude collectifs</strong> : le diagnostiqueur a besoin des caractéristiques de l\'installation de l\'immeuble. Demandez-les au syndic : type et année de la chaudière ou de la sous-station, contrat d\'entretien.',
      '<strong>Réseau de chaleur</strong> : si l\'immeuble y est raccordé, le DPE tient compte des caractéristiques du réseau.',
      '<strong>DPE collectif de l\'immeuble</strong> : s\'il existe, signalez-le, mais il ne remplace pas automatiquement le DPE de votre appartement. Pour vendre ou louer, il vous faut un DPE établi pour votre logement. La réglementation permet seulement, sous conditions, de l\'établir à partir des données de l\'immeuble : le diagnostiqueur vérifie si c\'est possible dans votre cas. <a href="/diagnostics/dpe-collectif/">En savoir plus sur le DPE collectif</a>.',
-     '<strong>Vente en copropriété</strong> : le <a href="/diagnostics/loi-carrez-boutin/">mesurage loi Carrez</a> est réalisé lors de la même visite.'])}
+     '<strong>Vente en copropriété</strong> : le <a href="/diagnostics/loi-carrez-boutin/">mesurage loi Carrez</a> peut être réalisé en complément du DPE, lorsqu\'il est nécessaire et commandé.'])}
 <h2>Studios et petites surfaces</h2>
 <p>Depuis le 1er juillet 2024, les seuils des étiquettes sont adaptés pour les logements de 40 m² ou moins (arrêté du 25 mars 2024). Un DPE établi avant cette date peut voir son étiquette remplacée par une attestation de l'ADEME, sans nouveau diagnostic. C'est un point à vérifier avant de mettre un studio en location : les logements classés G ne peuvent plus être loués depuis le 1er janvier 2025, et les logements classés F ne le pourront plus à partir du 1er janvier 2028. <a href="/actualites/passoires-thermiques-calendrier-location/">Le calendrier complet</a>.</p>
 <h2>Les documents à préparer</h2>
 {ul(["Factures de travaux : isolation, fenêtres, chauffage, ventilation", "Notices et attestations d'entretien de la chaudière, de la pompe à chaleur ou du ballon d'eau chaude", "Règlement de copropriété, descriptif du lot, plans si vous en disposez", "Pour un chauffage collectif : les informations transmises par le syndic", "Le précédent DPE, s'il existe"])}
-<p>Ces justificatifs comptent : sans eux, la méthode de calcul impose des valeurs par défaut, généralement moins favorables.</p>
+<p>En l'absence de justificatifs, certaines caractéristiques peuvent être renseignées à partir de valeurs conventionnelles, susceptibles d'influencer le résultat du DPE.</p>
 <h2>Comment se déroule le diagnostic ?</h2>
 {etapes}
 {devis_p("Demander un devis pour un DPE à Brest", "DPE Brest")}
@@ -481,7 +481,7 @@ def page_dpe_brest(C, zd, cs, dans, lib, centre):
 <p>Le coefficient qui convertit l'électricité en énergie primaire est de 1,9 depuis le 1er janvier 2026. Il passera à 1,7 le 1er janvier 2027 (arrêté du 19 août 2026). Un logement chauffé à l'électricité peut alors changer de classe sans travaux. Les DPE en cours restent valables, et l'ADEME délivrera une attestation de nouvelle étiquette. <a href="/dpe-2027/">Estimez la vôtre avec notre simulateur</a>.</p>
 <h2>Vente ou location : les règles à connaître</h2>
 {ul(["Le DPE est obligatoire pour toute vente et toute mise en location, et son étiquette doit figurer dans l'annonce.", "Il est valable dix ans. Les DPE réalisés avant le 1er juillet 2021 ne sont plus valables.",
-     'Pour une maison classée E, F ou G, l\'<a href="/diagnostics/audit-energetique/brest/">audit énergétique</a> s\'ajoute au DPE lors d\'une vente.',
+     'Pour une maison individuelle ou un immeuble en monopropriété classé E, F ou G, l\'<a href="/diagnostics/audit-energetique/brest/">audit énergétique</a> s\'ajoute au DPE lors d\'une vente. Les lots de copropriété n\'y sont pas soumis.',
      'Le DPE n\'est qu\'un des diagnostics d\'une vente : amiante, plomb, électricité, gaz, loi Carrez. <a href="/secteurs/brest/">Tous les diagnostics pour vendre à Brest</a>.'])}
 {stats}
 <h2>Brest et sa métropole</h2><p>Nous réalisons le DPE à {liens_communes(cs)}. <a href="{zpath(zs)}">Tout le secteur : {e(lib)}</a>.</p>
