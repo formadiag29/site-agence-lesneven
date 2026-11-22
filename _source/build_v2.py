@@ -242,8 +242,9 @@ ENERGIES = [("elec", "électricité"), ("gaz", "gaz"), ("fioul", "fioul"), ("boi
 def table_periodes(c):
     rows = "".join(f'<tr><th scope="row">{l}</th><td>{nb(c[k])}</td><td>{pct(c[k], c["n"])} %</td></tr>' for k, l in PERIODES)
     return f'<div class="defile"><table><thead><tr><th scope="col">Période de construction</th><th scope="col">DPE enregistrés</th><th scope="col">Part</th></tr></thead><tbody>{rows}</tbody></table></div>'
+RESEAU_A_CONFIRMER = {"Saint-Pol-de-Léon"}  # part « réseau de chaleur » de la base à confirmer avant affichage
 def phrase_energies(c, ou):
-    parts = sorted(((pct(c[k], c["n"]), l) for k, l in ENERGIES if pct(c[k], c["n"]) >= 1), reverse=True)
+    parts = sorted(((pct(c[k], c["n"]), l) for k, l in ENERGIES if pct(c[k], c["n"]) >= 1 and not (k == "reseau" and c["nom"] in RESEAU_A_CONFIRMER)), reverse=True)
     return f'<p>Énergie de chauffage principale des logements diagnostiqués {ou} : ' + ", ".join(f"{l} {p} %" for p, l in parts) + ".</p>"
 INDIC = [("pefg", "Classés E, F ou G"), ("pfg", "Classés F ou G"), ("pmaison", "Maisons"), ("pelec", "Chauffage électrique"), ("pgaz", "Chauffage au gaz"), ("pav48", "Construits avant 1948"), ("pav75", "Construits avant 1975")]
 def table_compar(nom, k, zlib, kz, kt):
@@ -321,6 +322,105 @@ def _plabennec(c, k, kt, tout):
            ("Ma maison date de 2008 : quels diagnostics pour la vendre ?", "Le DPE et l'état des risques, ainsi que les diagnostics électricité et gaz puisque les installations ont plus de quinze ans. Ni l'amiante ni le plomb ne sont requis. Nous réalisons aussi l'état parasitaire sur tous les biens.")]
     return haut, bas, faq
 
+
+# ---------------------------------------------------------------- demandes de devis avec origine
+from urllib.parse import quote
+def devis_mailto(origine):
+    sujet = f"Demande de devis diagnostic immobilier - {origine}"
+    corps = ("Bonjour,\r\n\r\nJe souhaite un devis pour :\r\n- Projet (vente / location / travaux / copropriété) :\r\n- Type de bien (maison / appartement / immeuble) :\r\n"
+             "- Adresse du bien :\r\n- Surface approximative :\r\n- Année de construction :\r\n- Chauffage (électricité / gaz / autre) :\r\n\r\nMes coordonnées :\r\n- Nom :\r\n- Téléphone :\r\n\r\n"
+             f"(Demande envoyée depuis la page {origine} du site www.sas-liberge.fr)\r\n")
+    return f"mailto:{MAIL}?subject={quote(sujet)}&amp;body={quote(corps)}"
+def devis_p(libelle, origine):
+    return f'<p><a class="btn clair" href="{devis_mailto(origine)}">{e(libelle)}</a> <a href="/devis/">Comment se passe un devis ?</a></p>'
+def echantillon(c, ou):
+    """Rappel de l'échantillon et de la période, à placer en tête des sections rédigées."""
+    return f"Sur les {nb(c['n'])} DPE enregistrés {ou} entre juillet 2021 et le 17 novembre 2026"
+LIMITE = "Ces chiffres décrivent les logements qui ont fait l'objet d'un DPE sur cette période, et non l'ensemble du parc de la commune."
+
+def _morlaix(c, k, kt, tout):
+    bas = f"""<h2>Vendre un logement ancien à Morlaix : les diagnostics qui s'ajoutent</h2>
+<p>{echantillon(c, "à Morlaix")}, {k["pav48"]} % concernent des logements construits avant 1948, contre {kt["pav48"]} % dans l'ensemble des communes que nous suivons. {LIMITE} Ils indiquent en revanche ce que contiennent le plus souvent les dossiers de vente :</p>
+{ul(['le <a href="/diagnostics/plomb/">constat de risque d\'exposition au plomb</a>, obligatoire pour tout logement construit avant 1949, à la vente comme à la location ;',
+     'le <a href="/diagnostics/amiante/">diagnostic amiante</a>, requis dès que le permis de construire est antérieur au 1er juillet 1997 ;',
+     'l\'<a href="/diagnostics/etat-parasitaire/">état parasitaire</a>, que nous réalisons sur tous les biens et qui prend tout son sens dans les immeubles anciens. Voir aussi notre article sur <a href="/actualites/merule-finistere-vente-immobiliere/">la mérule lors d\'une vente</a>.'])}
+<h2>Trois logements diagnostiqués sur quatre sont des appartements</h2>
+<p>Les appartements représentent {k["pappart"]} % des DPE enregistrés à Morlaix. Pour la vente d'un lot, le <a href="/diagnostics/loi-carrez-boutin/">mesurage loi Carrez</a> est obligatoire. Côté immeuble, toute copropriété de plus de quinze ans relève du <a href="/diagnostics/pppt/morlaix/">projet de plan pluriannuel de travaux</a>, y compris les petits immeubles gérés par un syndic bénévole ; le <a href="/diagnostics/dtg/morlaix/">diagnostic technique global</a> s'adresse aux immeubles qui demandent une analyse plus complète.</p>
+<h2>Le gaz, première énergie de chauffage des logements diagnostiqués</h2>
+<p>{k["pgaz"]} % des logements diagnostiqués à Morlaix sont chauffés au gaz : le <a href="/diagnostics/gaz/">diagnostic gaz</a> est requis dès que l'installation intérieure a plus de quinze ans. Le chauffage électrique ne concerne que {k["pelec"]} % des logements : le changement de coefficient du 1er janvier 2027 y modifiera moins d'étiquettes que dans les communes plus électriques. <a href="/diagnostics/dpe/morlaix/">Le DPE à Morlaix et autour de sa baie</a>.</p>
+<h2>Logements classés E, F ou G : audit à la vente, calendrier à la location</h2>
+<p>{nb(k["efg"])} DPE sont classés E, F ou G à Morlaix, soit {k["pefg"]} % contre {kt["pefg"]} % dans l'ensemble des communes que nous suivons ; {k["pfg"]} % sont en F ou G. Pour une maison, l'<a href="/diagnostics/audit-energetique/morlaix/">audit énergétique</a> s'ajoute au dossier de vente. Pour une location, le <a href="/actualites/passoires-thermiques-calendrier-location/">calendrier des interdictions de louer</a> s'applique.</p>"""
+    faq = [("Quels diagnostics pour vendre un appartement ancien à Morlaix ?", "Le DPE, l'état des risques et le mesurage loi Carrez dans tous les cas. S'y ajoutent le plomb si l'immeuble date d'avant 1949, l'amiante si le permis de construire est antérieur au 1er juillet 1997, et les diagnostics électricité et gaz si les installations ont plus de quinze ans. Nous réalisons aussi l'état parasitaire sur tous les biens."),
+           ("Notre petit immeuble de Morlaix est géré par un syndic bénévole : sommes-nous concernés par le PPPT ?", "Oui. Depuis le 1er janvier 2025, toutes les copropriétés de plus de quinze ans doivent faire établir un projet de plan pluriannuel de travaux, quelle que soit leur taille et que le syndic soit professionnel ou bénévole."),
+           ("Votre agence est à Lesneven : intervenez-vous à Morlaix ?", f"Oui, nous intervenons à Morlaix et dans les communes de sa baie. Appelez-nous au {TEL} pour convenir d'un rendez-vous.")]
+    return "", bas, faq
+
+def _landerneau(c, k, kt, tout):
+    bas = f"""<h2>Appartement ou maison : deux dossiers différents à Landerneau</h2>
+<p>{echantillon(c, "à Landerneau")}, {k["pappart"]} % portent sur des appartements et {k["pmaison"]} % sur des maisons. {LIMITE}</p>
+<p><strong>Vous vendez un appartement.</strong> Le <a href="/diagnostics/loi-carrez-boutin/">mesurage loi Carrez</a> est obligatoire, tout comme le <a href="/diagnostics/amiante/">diagnostic amiante</a> des parties privatives si le permis de construire est antérieur au 1er juillet 1997. L'audit énergétique ne s'applique pas aux appartements.</p>
+<p><strong>Vous vendez une maison.</strong> Le dossier comprend le DPE, l'état des risques, l'amiante et le plomb selon l'âge du bien, l'électricité et le gaz si les installations ont plus de quinze ans. Si le DPE classe la maison en E, F ou G, l'<a href="/diagnostics/audit-energetique/landerneau/">audit énergétique</a> est obligatoire.</p>
+<h2>Des immeubles des années 1950 à 1970</h2>
+<p>{pct(c["p4874"], c["n"])} % des logements diagnostiqués à Landerneau ont été construits entre 1948 et 1974. Pour ces immeubles, le dossier technique amiante des parties communes est tenu par le syndic, et la copropriété relève du <a href="/diagnostics/pppt/landerneau/">projet de plan pluriannuel de travaux</a>, qui s'appuie sur le <a href="/diagnostics/dpe-collectif/">DPE collectif</a>. Le <a href="/diagnostics/dtg/landerneau/">diagnostic technique global</a> peut être décidé en assemblée générale pour préparer un programme de travaux.</p>
+<h2>Moins de logements classés E, F ou G que la moyenne</h2>
+<p>{k["pefg"]} % des DPE enregistrés à Landerneau sont classés E, F ou G ({nb(k["efg"])} DPE), contre {kt["pefg"]} % dans l'ensemble des communes que nous suivons. {pct(c["p06"], c["n"])} % des logements diagnostiqués ont été construits depuis 2006. Le gaz est l'énergie de chauffage de {k["pgaz"]} % des logements : le <a href="/diagnostics/gaz/">diagnostic gaz</a> s'ajoute au dossier dès que l'installation a plus de quinze ans. <a href="/diagnostics/dpe/landerneau/">Le DPE à Landerneau et dans le pays de Daoulas</a>.</p>"""
+    faq = [("Je vends une maison classée D à Landerneau : faut-il un audit énergétique ?", "Non. L'audit énergétique n'est obligatoire que pour les maisons et les immeubles en monopropriété classés E, F ou G. Les biens classés D seront concernés à partir du 1er janvier 2034."),
+           ("Notre copropriété de Landerneau date des années 1960 : quels diagnostics collectifs prévoir ?", "Le projet de plan pluriannuel de travaux, obligatoire pour toute copropriété de plus de quinze ans, et le DPE collectif. Le dossier technique amiante des parties communes doit par ailleurs être tenu à jour par le syndic."),
+           ("Quels diagnostics pour louer un logement à Landerneau ?", "Le DPE, l'état des risques et la surface habitable, auxquels s'ajoutent le plomb si le logement date d'avant 1949 et les diagnostics électricité et gaz si les installations ont plus de quinze ans.")]
+    return "", bas, faq
+
+def _landivisiau(c, k, kt, tout):
+    lignes = [("Maison construite avant 1949", "DPE, état des risques, plomb, amiante ; électricité et gaz si les installations ont plus de quinze ans ; audit énergétique si le DPE est classé E, F ou G"),
+              ("Maison construite de 1949 à juin 1997", "DPE, état des risques, amiante ; électricité et gaz si les installations ont plus de quinze ans ; audit énergétique si le DPE est classé E, F ou G"),
+              ("Maison dont le permis est postérieur à juillet 1997", "DPE, état des risques ; électricité et gaz si les installations ont plus de quinze ans ; audit énergétique si le DPE est classé E, F ou G"),
+              ("Appartement en copropriété", "DPE, état des risques, mesurage loi Carrez ; amiante si le permis est antérieur à juillet 1997 ; plomb si l'immeuble date d'avant 1949 ; électricité et gaz si les installations ont plus de quinze ans")]
+    tab = '<div class="defile"><table><thead><tr><th scope="col">Votre bien</th><th scope="col">Diagnostics à prévoir pour une vente</th></tr></thead><tbody>' + "".join(f'<tr><th scope="row">{a}</th><td>{b}</td></tr>' for a, b in lignes) + "</tbody></table></div>"
+    autour = ["Plouvorn", "Bodilis", "Lampaul-Guimiliau", "Plounéventer", "Plouzévédé", "Sizun"]
+    bas = f"""<h2>Maison ou appartement : la liste pour une vente à Landivisiau</h2>
+<p>{echantillon(c, "à Landivisiau")}, {k["pmaison"]} % concernent des maisons et {k["pappart"]} % des appartements. {LIMITE} Les deux cas se présentent donc aussi souvent l'un que l'autre :</p>
+{tab}
+<p class="note">Nous réalisons en plus l'<a href="/diagnostics/etat-parasitaire/">état parasitaire</a> sur tous les biens. Liste indicative : <a href="/quels-diagnostics/">obtenez la vôtre en six questions</a>.</p>
+<h2>Électricité, gaz, fioul : ce que le chauffage change</h2>
+{ul([f'<strong>Électricité ({k["pelec"]} % des logements diagnostiqués)</strong> : avec le coefficient applicable au 1er janvier 2027, une partie de ces logements changera de classe. <a href="/dpe-2027/">Vérifiez le vôtre avec le simulateur</a>.',
+     f'<strong>Gaz ({k["pgaz"]} %)</strong> : le <a href="/diagnostics/gaz/">diagnostic gaz</a> est requis dès que l\'installation a plus de quinze ans.',
+     f'<strong>Fioul ({k["pfioul"]} %)</strong> : pour une maison classée E, F ou G, l\'<a href="/diagnostics/audit-energetique/landivisiau/">audit énergétique</a> chiffre le remplacement du chauffage et les travaux d\'isolation.'])}
+<h2>{nb(k["efg"])} DPE classés E, F ou G</h2>
+<p>Cela représente {k["pefg"]} % des DPE enregistrés à Landivisiau, un niveau proche de l'ensemble des communes que nous suivons ({kt["pefg"]} %). Pour les copropriétés, voir aussi le <a href="/diagnostics/pppt/landivisiau/">PPPT</a> et le <a href="/diagnostics/dtg/landivisiau/">DTG</a> dans le secteur de Landivisiau. <a href="/diagnostics/dpe/landivisiau/">Le DPE à Landivisiau et dans son secteur</a>.</p>"""
+    faq = [("Ma maison de Landivisiau est chauffée au fioul : qu'en dira le DPE ?", "L'étiquette dépend autant de l'isolation et des équipements que de l'énergie utilisée. Le fioul pèse surtout sur le volet émissions de gaz à effet de serre. Si la maison est classée E, F ou G, l'audit énergétique obligatoire à la vente chiffre le changement de chauffage."),
+           ("Intervenez-vous dans les communes autour de Landivisiau ?", "Oui, notamment à " + ", ".join(f'<a href="/secteurs/{slug(n)}/">{n}</a>' for n in autour) + "."),
+           ("Quels diagnostics pour louer un appartement à Landivisiau ?", "Le DPE, l'état des risques et la surface habitable. S'y ajoutent le plomb pour un immeuble d'avant 1949, et les diagnostics électricité et gaz si les installations ont plus de quinze ans.")]
+    return "", bas, faq
+
+def _saintpol(c, k, kt, tout):
+    autour = ["Roscoff", "Plouescat", "Cléder", "Plouénan"]
+    bas = f"""<h2>Plus d'un DPE sur quatre classé E, F ou G</h2>
+<p>{echantillon(c, "à Saint-Pol-de-Léon")}, {nb(k["efg"])} sont classés E, F ou G, soit {k["pefg"]} % contre {kt["pefg"]} % dans l'ensemble des communes que nous suivons ; {k["pfg"]} % sont en F ou G. {LIMITE}</p>
+{ul(['<strong>Pour une vente</strong> : si le bien est une maison, l\'<a href="/diagnostics/audit-energetique/haut-leon/">audit énergétique</a> est obligatoire et doit être remis dès la première visite.',
+     '<strong>Pour une location</strong> : les logements classés G ne peuvent plus être proposés à la location depuis le 1er janvier 2025 ; les logements classés F suivront au 1er janvier 2028. <a href="/actualites/passoires-thermiques-calendrier-location/">Le calendrier complet</a>.'])}
+<h2>Avant de commander un audit, vérifiez l'effet du coefficient 2027</h2>
+<p>{k["pelec"]} % des logements diagnostiqués à Saint-Pol-de-Léon sont chauffés à l'électricité. Au 1er janvier 2027, le coefficient de conversion de l'électricité passe de 1,9 à 1,7 : un logement électrique peut changer de classe sans travaux, et une maison qui sort de la classe E n'est plus soumise à l'audit. <a href="/dpe-2027/">Notre simulateur</a> estime la nouvelle étiquette à partir du numéro ADEME. <a href="/diagnostics/dpe/haut-leon/">Le DPE dans le Haut-Léon</a>.</p>
+<h2>Un logement diagnostiqué sur quatre date d'avant 1948</h2>
+<p>{k["pav48"]} % des DPE enregistrés portent sur des logements construits avant 1948. Pour ces biens, le <a href="/diagnostics/plomb/">diagnostic plomb</a> est obligatoire (logements d'avant 1949) et le <a href="/diagnostics/amiante/">diagnostic amiante</a> s'ajoute au dossier de vente. Nous réalisons l'<a href="/diagnostics/etat-parasitaire/">état parasitaire</a> sur tous les biens. Les copropriétés de plus de quinze ans relèvent du <a href="/diagnostics/pppt/haut-leon/">PPPT</a>, voire du <a href="/diagnostics/dtg/haut-leon/">DTG</a>.</p>"""
+    faq = [("Ma maison de Saint-Pol-de-Léon est classée F : puis-je la vendre ?", "Oui. La vente d'un bien classé F ou G n'est pas interdite, mais l'audit énergétique est obligatoire et doit être remis à l'acquéreur dès la première visite. C'est la mise en location qui est encadrée : les logements classés F ne pourront plus être loués à partir du 1er janvier 2028."),
+           ("Mon logement chauffé à l'électricité peut-il changer de classe en 2027 ?", "C'est possible, sans que ce soit systématique. <a href=\"/dpe-2027/\">Notre simulateur</a> donne une estimation à partir du numéro ADEME ; l'attestation officielle sera délivrée par l'ADEME à partir du 1er janvier 2027."),
+           ("Intervenez-vous aussi à Roscoff, Plouescat et Cléder ?", "Oui, dans tout le Haut-Léon : " + ", ".join(f'<a href="/secteurs/{slug(n)}/">{n}</a>' for n in autour) + ".")]
+    return "", bas, faq
+
+def _saintrenan(c, k, kt, tout):
+    recent = pct(c["p8905"] + c["p06"], c["n"]); recent_t = pct(tout["p8905"] + tout["p06"], tout["n"])
+    autour = ["Ploudalmézeau", "Le Conquet", "Plouarzel", "Locmaria-Plouzané", "Milizac-Guipronvel"]
+    bas = f"""<h2>Un parc plus récent que la moyenne</h2>
+<p>{echantillon(c, "à Saint-Renan")}, {recent} % concernent des logements construits depuis 1989, contre {recent_t} % dans l'ensemble des communes que nous suivons. {LIMITE}</p>
+<p>Pour un bien dont le permis de construire est postérieur au 1er juillet 1997, ni l'amiante ni le plomb ne sont requis. En revanche, récent ne veut pas dire dispensé : dès que l'installation a quinze ans, les diagnostics <a href="/diagnostics/electricite/">électricité</a> et <a href="/diagnostics/gaz/">gaz</a> font partie du dossier de vente comme de location.</p>
+<h2>Plus d'un logement diagnostiqué sur deux chauffé à l'électricité</h2>
+<p>L'électricité est l'énergie de chauffage de {k["pelec"]} % des logements diagnostiqués à Saint-Renan, contre {kt["pelec"]} % en moyenne. C'est le profil le plus concerné par le coefficient applicable au 1er janvier 2027 (1,7 au lieu de 1,9). Les DPE en cours restent valables ; <a href="/dpe-2027/">notre simulateur</a> estime la future étiquette. <a href="/diagnostics/dpe/iroise/">Le DPE à Saint-Renan et dans le pays d'Iroise</a>.</p>
+<h2>{nb(k["efg"])} DPE classés E, F ou G</h2>
+<p>Soit {k["pefg"]} % des DPE enregistrés, moins que dans l'ensemble des communes que nous suivons ({kt["pefg"]} %). Pour une maison dans ce cas, l'<a href="/diagnostics/audit-energetique/iroise/">audit énergétique</a> est obligatoire à la vente. Pour les copropriétés : <a href="/diagnostics/pppt/iroise/">PPPT</a> et <a href="/diagnostics/dtg/iroise/">DTG</a> dans le pays d'Iroise.</p>"""
+    faq = [("Ma maison de Saint-Renan date de 2002 : quels diagnostics pour la vendre ?", "Le DPE et l'état des risques, ainsi que les diagnostics électricité et gaz puisque les installations ont plus de quinze ans. Le permis de construire étant postérieur au 1er juillet 1997, ni l'amiante ni le plomb ne sont requis. Nous réalisons aussi l'état parasitaire sur tous les biens."),
+           ("Mon DPE de 2023 reste-t-il valable après le 1er janvier 2027 ?", "Oui, il reste valable jusqu'à sa date de fin de validité. Si le logement est chauffé à l'électricité, une attestation de nouvelle étiquette pourra être obtenue auprès de l'ADEME à partir du 1er janvier 2027, sans refaire le diagnostic."),
+           ("Intervenez-vous au Conquet, à Ploudalmézeau ou à Plouarzel ?", "Oui, dans tout le pays d'Iroise : " + ", ".join(f'<a href="/secteurs/{slug(n)}/">{n}</a>' for n in autour) + ".")]
+    return "", bas, faq
+
 LOCAL = {
  "Lesneven": dict(f=_lesneven, titre="DPE et diagnostic immobilier à Lesneven : agence en centre-ville | Arliane",
     desc=lambda c, k: f"DPE, amiante, plomb, électricité, gaz, audit énergétique : tous vos diagnostics immobiliers à Lesneven. Agence au 15 rue Général de Gaulle. {nb(c['n'])} DPE analysés. Devis gratuit."),
@@ -328,6 +428,19 @@ LOCAL = {
     desc=lambda c, k: f"Diagnostiqueur immobilier à Brest : DPE, amiante, loi Carrez, audit énergétique, PPPT et DTG de copropriété. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit."),
  "Plabennec": dict(f=_plabennec, titre="Diagnostic immobilier Plabennec : DPE, audit énergétique, amiante | Arliane",
     desc=lambda c, k: f"Diagnostic immobilier à Plabennec : DPE, audit énergétique des maisons classées E, F ou G, amiante, électricité, gaz. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit."),
+ "Morlaix": dict(f=_morlaix, devis=True, titre="Diagnostiqueur immobilier Morlaix : DPE, amiante, plomb, audit énergétique | Arliane",
+    accroche="Nous réalisons vos diagnostics immobiliers à Morlaix et autour de sa baie : vente d'un appartement ou d'une maison, mise en location, travaux, copropriété. Le rendez-vous se prend par téléphone auprès de notre agence de Lesneven.",
+    desc=lambda c, k: f"Diagnostiqueur immobilier à Morlaix : DPE, amiante, plomb, loi Carrez, audit énergétique, PPPT de copropriété. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit."),
+ "Landerneau": dict(f=_landerneau, devis=True, titre="Diagnostiqueur immobilier Landerneau : DPE, amiante, loi Carrez, audit | Arliane",
+    desc=lambda c, k: f"Diagnostiqueur immobilier à Landerneau : DPE, amiante, loi Carrez, audit énergétique, PPPT et DPE collectif de copropriété. {nb(c['n'])} DPE analysés. Devis gratuit."),
+ "Landivisiau": dict(f=_landivisiau, devis=True, titre="Diagnostic immobilier Landivisiau : DPE, audit énergétique, amiante | Arliane",
+    desc=lambda c, k: f"Diagnostic immobilier à Landivisiau : la liste des diagnostics selon votre bien, DPE, audit énergétique, amiante, gaz. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit."),
+ "Saint-Pol-de-Léon": dict(f=_saintpol, devis=True, titre="Diagnostic immobilier Saint-Pol-de-Léon : DPE, audit énergétique, plomb | Arliane",
+    accroche="Nous réalisons vos diagnostics immobiliers à Saint-Pol-de-Léon, à Roscoff et dans tout le Haut-Léon, pour les ventes, les mises en location et les copropriétés.",
+    desc=lambda c, k: f"Diagnostic immobilier à Saint-Pol-de-Léon : DPE, audit énergétique, plomb, amiante, état parasitaire. {nb(c['n'])} DPE analysés, {k['pefg']} % classés E, F ou G. Devis gratuit."),
+ "Saint-Renan": dict(f=_saintrenan, devis=True, titre="Diagnostic immobilier Saint-Renan : DPE, électricité, gaz, audit énergétique | Arliane",
+    accroche="Nous réalisons vos diagnostics immobiliers à Saint-Renan et dans le pays d'Iroise, de Ploudalmézeau au Conquet, pour les ventes, les locations et les copropriétés.",
+    desc=lambda c, k: f"Diagnostic immobilier à Saint-Renan : DPE, électricité, gaz, audit énergétique, effet du coefficient 2027. {nb(c['n'])} DPE analysés, {k['pelec']} % chauffés à l'électricité. Devis gratuit."),
 }
 
 def pages_projets(zd, C, tout, kt):
@@ -383,12 +496,14 @@ def build():
         faq = [(f"Quels diagnostics faut-il pour vendre {ou} ?", "Le DPE et l'état des risques dans tous les cas, auxquels s'ajoutent selon le bien l'amiante, le plomb, l'électricité, le gaz, le mesurage loi Carrez et l'audit énergétique. <a href=\"/quels-diagnostics/\">Obtenez la liste pour votre bien</a>."),
                (f"Sous quel délai intervenez-vous {ou} ?", f"Nous proposons en général un rendez-vous sous quelques jours. Appelez-nous au {TEL}.")]
         kz = chiffres(zd[z[0]]); loc = LOCAL.get(nom)
+        if loc and loc.get("accroche"): intro = loc["accroche"]
+        devis_btn = devis_p(f"Demander un devis pour {nom}", nom) if loc and loc.get("devis") else ""
         haut, bas, faq_loc = loc["f"](c, k, kt, tout) if loc else ("", "", [])
         faq = faq_loc + faq
         arts = articles_pour(k)
         body = f"""<p class="chapo">{intro}</p>
 {BTN}
-{haut}
+{devis_btn}{haut}
 <h2>Le DPE {ou} en chiffres</h2>
 {tuiles(c, k)}{barres(c)}{avert}{SRC}
 <h2>Ce que ces chiffres disent du bâti {de_la(nom)}</h2>
@@ -452,12 +567,40 @@ def build():
                  f"{D['titre']} {dans}", body, crumbs=[("Diagnostics", "/diagnostics/"), (D["nom"], f"/diagnostics/{s}/"), (centre, f"/diagnostics/{s}/{zs}/")],
                  ld=[faq_ld(faq), {"@context": "https://schema.org", "@type": "Service", "name": f"{D['titre']} {dans}", "serviceType": D["titre"], "provider": {"@id": BASE + "/#agence"}, "areaServed": [{"@type": "City", "name": x["nom"]} for x in cs], "url": BASE + f"/diagnostics/{s}/{zs}/"}])
 
-    # ---------------- hub secteurs
-    blocs = "".join(f'<h2><a href="{zpath(z[0])}">{e(z[2])}</a></h2><p>{liens_communes([C[i] for i in z[4] if i in C])}.</p>' for z in ZONES)
-    page("/secteurs/", "Secteurs d'intervention Nord-Finistère | Arliane Diagnostic Nord Finistère", f"Notre agence de Lesneven réalise vos diagnostics immobiliers dans {len(C)} communes du Nord-Finistère : Brest, Landerneau, Landivisiau, Morlaix, les Abers, le Léon.",
-         "Nos secteurs d'intervention dans le Nord-Finistère", f"""<p class="chapo">Basés à Lesneven, nous intervenons dans tout le Nord-Finistère, de la pointe Saint-Mathieu à la baie de Morlaix.</p>
-{cartes([(zpath(z[0]), z[2], f"{nb(zd[z[0]]['n'])} DPE analysés") for z in ZONES])}{blocs}
-<p>Votre commune n'apparaît pas ? Appelez-nous au <a href="tel:{TEL_LINK}">{TEL}</a> : nous intervenons très probablement chez vous.</p>""", crumbs=[("Secteurs", "/secteurs/")], full=True)
+    # ---------------- hub secteurs : page pilier Nord-Finistère
+    blocs = "".join(f'<h3><a href="{zpath(z[0])}">{e(z[2])}</a></h3><p>{liens_communes([C[i] for i in z[4] if i in C])}.</p>' for z in ZONES)
+    ligz = "".join(f'<tr><th scope="row"><a href="{zpath(z[0])}">{e(z[2])}</a></th><td>{len([i for i in z[4] if i in C])}</td><td>{nb(zd[z[0]]["n"])}</td><td>{chiffres(zd[z[0]])["pefg"]} %</td><td>{chiffres(zd[z[0]])["pmaison"]} %</td><td>{chiffres(zd[z[0]])["pelec"]} %</td></tr>' for z in ZONES)
+    fortes = [c for n in ["Brest", "Morlaix", "Landerneau", "Landivisiau", "Lesneven", "Saint-Pol-de-Léon", "Saint-Renan", "Plabennec"] for c in C.values() if c["nom"] == n]
+    prest = "".join(f'<p><strong>{e(DIAG[sv]["titre"])}</strong> : ' + ", ".join(f'<a href="/diagnostics/{sv}/{z[0]}/">{e(z[1])}</a>' for z in ZONES) + f'. <a href="/diagnostics/{sv}/">Tout savoir</a>.</p>' for sv in SERVICES_ZONE)
+    faq = [("Dans quelles communes du Nord-Finistère intervenez-vous ?", f"Dans {len(C)} communes réparties en huit secteurs, de la pointe Saint-Mathieu à la baie de Morlaix. Si votre commune ne figure pas dans la liste, appelez-nous au {TEL} : nous vous dirons si nous pouvons intervenir."),
+           ("Où se trouve votre cabinet ?", f"Notre agence est installée au {B.RUE}, {B.CP} {B.VILLE}. Elle est ouverte du lundi au vendredi, de 9h à 12h et de 14h à 18h. Les diagnostiqueurs se déplacent chez vous dans tout le Finistère Nord."),
+           ("Réalisez-vous aussi les diagnostics de copropriété ?", "Oui : le <a href=\"/diagnostics/pppt/\">projet de plan pluriannuel de travaux (PPPT)</a>, le <a href=\"/diagnostics/dtg/\">diagnostic technique global (DTG)</a> et le <a href=\"/diagnostics/dpe-collectif/\">DPE collectif</a>, en partenariat avec un bureau d'études structure et thermique."),
+           ("Comment obtenir un devis ?", f"Par téléphone au {TEL}, ou par e-mail en indiquant la commune, le type de bien et votre projet. <a href=\"/devis/\">Voir les informations utiles pour un devis</a>.")]
+    page("/secteurs/", "Diagnostiqueur immobilier Nord-Finistère : 8 secteurs, " + str(len(C)) + " communes | Arliane",
+         f"Diagnostic immobilier dans le Finistère Nord : DPE, audit énergétique, amiante, plomb, DTG, PPPT. Cabinet à Lesneven, diagnostiqueurs certifiés, {len(C)} communes de Brest à Morlaix. Devis gratuit.",
+         "Diagnostic immobilier dans le Nord-Finistère", f"""<p class="chapo">{e(B.NOM)} est un cabinet de diagnostic immobilier installé à Lesneven. Nos diagnostiqueurs, certifiés par Abcidia Certification, interviennent dans tout le Finistère Nord, de la pointe Saint-Mathieu à la baie de Morlaix : {len(C)} communes réparties en huit secteurs.</p>
+{BTN}
+{devis_p("Demander un devis par e-mail", "Nord-Finistère")}
+<h2>Huit secteurs d'intervention</h2>
+{cartes([(zpath(z[0]), z[2], f"{len([i for i in z[4] if i in C])} communes, {nb(zd[z[0]]['n'])} DPE analysés") for z in ZONES])}
+<h2>Le Nord-Finistère en chiffres, secteur par secteur</h2>
+<p>Nous avons analysé {nb(tout['n'])} DPE enregistrés dans ces {len(C)} communes : {kt['pefg']} % sont classés E, F ou G et {kt['pelec']} % concernent des logements chauffés à l'électricité.</p>
+<div class="defile"><table><thead><tr><th scope="col">Secteur</th><th scope="col">Communes</th><th scope="col">DPE enregistrés</th><th scope="col">Classés E, F ou G</th><th scope="col">Maisons</th><th scope="col">Chauffage électrique</th></tr></thead><tbody>{ligz}</tbody></table></div>
+{SRC}
+<p><a href="/observatoire-dpe-nord-finistere/">Consulter l'observatoire DPE du Nord-Finistère, commune par commune</a>.</p>
+<h2>Les villes principales</h2>
+{cartes([(cpath(c), c["nom"], f"{nb(c['n'])} DPE analysés, {chiffres(c)['pefg']} % classés E, F ou G") for c in fortes])}
+<h2>Nos prestations dans chaque secteur</h2>
+{prest}
+<p>Amiante, plomb, électricité, gaz, état parasitaire, mesurage, état des risques : <a href="/diagnostics/">voir tous nos diagnostics</a>, ou <a href="/quels-diagnostics/">obtenez la liste pour votre bien en six questions</a>.</p>
+<h2>Toutes les communes desservies</h2>
+{blocs}
+<p>Votre commune n'apparaît pas ? Appelez-nous au <a href="tel:{TEL_LINK}">{TEL}</a>.</p>
+<h2>Un cabinet local, une équipe certifiée</h2>
+<p>Notre agence se trouve au {B.RUE}, à {B.VILLE}. L'équipe réunit des diagnostiqueurs certifiés par Abcidia Certification et un accueil à l'agence, du lundi au vendredi. <a href="/agence/">Découvrir l'agence et l'équipe</a> · <a href="/professionnels/">Agences, notaires et syndics</a> · <a href="/contact/">Contact et itinéraire</a>.</p>
+{faq_html(faq)}""", crumbs=[("Secteurs", "/secteurs/")], full=True,
+         ld=[faq_ld(faq), {"@context": "https://schema.org", "@type": "ItemList", "name": "Secteurs d'intervention dans le Nord-Finistère", "itemListElement": [
+             {"@type": "ListItem", "position": n + 1, "name": z[2], "url": BASE + zpath(z[0])} for n, z in enumerate(ZONES)]}])
 
     # ---------------- observatoire
     cs = sorted(C.values(), key=lambda c: -c["n"])
