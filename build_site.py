@@ -241,7 +241,7 @@ def business_ld(full=False):
             {"@type": "Offer", "itemOffered": {"@type": "Service", "name": x["titre"], "url": BASE + f"/diagnostics/{x['slug']}/"}} for x in DIAGS]}
     return d
 
-def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head="", full=False):
+def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head="", full=False, appel=None):
     """path : '/dpe/' -> écrit dpe/index.html"""
     url = BASE + path
     lds = [business_ld(full)] + (ld or [])
@@ -298,7 +298,7 @@ def page(path, title, desc, h1, body, crumbs=None, ld=None, extra_head="", full=
 <section class="appel">
 <div class="large">
 <h2>Un diagnostic à faire réaliser ?</h2>
-<p>Devis gratuit et sans engagement, dans tout le Nord-Finistère.</p>
+<p>{appel or 'Réponse rapide, devis gratuit et rendez-vous sous quelques jours dans tout le Nord-Finistère.'}</p>
 {AVIS}
 <p><a class="btn" href="tel:{TEL_LINK}">📞 Appelez-nous au {TEL}</a> <a class="btn clair" href="{DEVIS}">Demander un devis</a></p>
 <p class="note"><a href="/">Retour à l'accueil</a> · <a href="/quels-diagnostics/">Quels diagnostics pour mon bien ?</a></p>
