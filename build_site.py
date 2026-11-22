@@ -26,6 +26,7 @@ LEGAL = dict(
 )
 COMMUNES_LD = []   # rempli par build_v2 : communes desservies
 extra_diag = lambda slug: ""   # remplacé par build_v2 : maillage des pages prestations
+liens_dpe_secteurs = lambda: ""  # remplacé par build_v2 : liens vers les pages DPE par secteur
 TEL = "02 98 46 39 01"
 TEL_LINK = "+33298463901"
 MAIL = "accueil@sas-liberge.fr"
@@ -378,7 +379,7 @@ def build():
 
     # ---- diagnostics
     page("/diagnostics/", "Tous nos diagnostics immobiliers | Arliane Diagnostic Nord Finistère", "Tous les diagnostics immobiliers de notre agence de Lesneven : DPE, amiante, plomb, électricité, gaz, état parasitaire, Carrez, ERP, audit énergétique, DTG.",
-         "Nos diagnostics immobiliers", f"<p class=\"chapo\">Du DPE à l'audit énergétique, nous réalisons tous les diagnostics exigés pour une vente, une location, des travaux ou la gestion d'une copropriété.</p>{cartes(cartes_diag)}<p>Vous ne savez pas lesquels vous concernent ? Consultez notre <a href=\"/vente-location/\">tableau vente ou location</a> ou appelez-nous au <a href=\"tel:{TEL_LINK}\">{TEL}</a>.</p>",
+         "Nos diagnostics immobiliers", f"<p class=\"chapo\">Du DPE à l'audit énergétique, nous réalisons tous les diagnostics exigés pour une vente, une location, des travaux ou la gestion d'une copropriété.</p>{cartes(cartes_diag)}{liens_dpe_secteurs()}<p>Vous ne savez pas lesquels vous concernent ? Consultez notre <a href=\"/vente-location/\">tableau vente ou location</a> ou appelez-nous au <a href=\"tel:{TEL_LINK}\">{TEL}</a>.</p>",
          crumbs=[("Diagnostics", "/diagnostics/")])
     for d in DIAGS:
         autres = [x for x in DIAGS if x is not d][:4]
@@ -450,6 +451,7 @@ def build():
 <p>Pour les DPE en cours de validité, l'arrêté prévoit une attestation de nouvelle étiquette, générée par l'ADEME sur le site de l'Observatoire DPE-Audit. Sans attestation, le DPE reste valable jusqu'à sa date de fin de validité : il n'est pas nécessaire de le refaire.</p>
 <h2>Pourquoi l'étiquette change-t-elle ?</h2><p>Le DPE exprime la consommation en énergie primaire. Pour l'électricité, chaque kilowattheure consommé est multiplié par un coefficient : 2,3 jusqu'en 2025, 1,9 depuis le 1er janvier 2026 et 1,7 à partir du 1er janvier 2027. La consommation affichée baisse donc mécaniquement pour les logements électriques.</p>
 <h2>Ce que cela change pour vous</h2>{ul(["Un logement classé G qui passe en F peut de nouveau être proposé à la location.", "Une maison qui sort des classes E, F ou G n'est plus soumise à l'audit énergétique obligatoire à la vente.", "Une meilleure étiquette valorise votre bien dans l'annonce."])}
+<h2>Faire réaliser un DPE près de chez vous</h2>{liens_dpe_secteurs()}
 {faq_html(faq)}"""
     page("/dpe-2027/", "Simulateur DPE 2027 par numéro ADEME | Arliane Diagnostic Nord Finistère", "Simulateur gratuit : saisissez le numéro ADEME de votre DPE et découvrez votre étiquette énergie au 1er janvier 2027 (coefficient électricité 1,7).",
          "Simulateur DPE 2027 : votre nouvelle étiquette énergie", body, crumbs=[("DPE 2027", "/dpe-2027/")], ld=[faq_ld(faq)])

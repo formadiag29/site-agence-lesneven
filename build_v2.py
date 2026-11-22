@@ -300,7 +300,7 @@ def _brest(c, k, kt, tout):
      f'<strong>Audit énergétique</strong> : il ne s\'applique pas aux appartements. Seules les maisons ({k["pmaison"]} % des logements diagnostiqués) et les immeubles en monopropriété classés E, F ou G y sont soumis : <a href="/diagnostics/audit-energetique/brest/">audit énergétique à Brest</a>.'])}
 <h2>Gaz et réseau de chaleur : deux particularités brestoises</h2>
 <p>{k["pgaz"]} % des logements diagnostiqués à Brest sont chauffés au gaz : le <a href="/diagnostics/gaz/">diagnostic gaz</a> est requis dès que l'installation intérieure a plus de quinze ans. {pct(c["reseau"], c["n"])} % sont raccordés à un réseau de chaleur : dans ce cas, le DPE tient compte des caractéristiques du réseau et de l'installation collective, et les documents remis par le syndic sont utiles le jour de la visite.</p>
-<p>Le chauffage électrique ne concerne que {k["pelec"]} % des logements, contre {kt["pelec"]} % dans l'ensemble des communes que nous suivons : le changement de coefficient du 1er janvier 2027 y fera donc évoluer moins d'étiquettes qu'ailleurs. <a href="/diagnostics/dpe/brest/">Le DPE à Brest en détail</a>.</p>
+<p>Le chauffage électrique ne concerne que {k["pelec"]} % des logements, contre {kt["pelec"]} % dans l'ensemble des communes que nous suivons : le changement de coefficient du 1er janvier 2027 y fera donc évoluer moins d'étiquettes qu'ailleurs. <a href="/diagnostics/dpe/brest/">DPE à Brest : appartements, studios, documents à préparer</a>.</p>
 <h2>Copropriétés brestoises : PPPT, DTG et DPE collectif</h2>
 <p>Avec {nb(c["appart"])} DPE d'appartements enregistrés, Brest rassemble {part_app} % des appartements diagnostiqués dans les {tout["nbc"]} communes que nous suivons. Toute copropriété de plus de quinze ans doit aujourd'hui disposer d'un <a href="/diagnostics/pppt/brest/">projet de plan pluriannuel de travaux</a>, qui s'appuie sur le <a href="/diagnostics/dpe-collectif/">DPE collectif</a> de l'immeuble ; le <a href="/diagnostics/dtg/brest/">diagnostic technique global</a> va plus loin lorsque l'immeuble le justifie. Nous réalisons ces missions avec un bureau d'études structure et thermique partenaire.</p>"""
     faq = [("Quels diagnostics pour vendre un appartement à Brest ?", "Le DPE, l'état des risques et le mesurage loi Carrez dans tous les cas. S'y ajoutent l'amiante si le permis de construire est antérieur au 1er juillet 1997, l'électricité et le gaz si les installations ont plus de quinze ans, et le plomb si l'immeuble date d'avant 1949. Nous réalisons aussi l'état parasitaire sur tous les biens."),
@@ -443,6 +443,58 @@ LOCAL = {
     desc=lambda c, k: f"Diagnostic immobilier à Saint-Renan : DPE, électricité, gaz, audit énergétique, effet du coefficient 2027. {nb(c['n'])} DPE analysés, {k['pelec']} % chauffés à l'électricité. Devis gratuit."),
 }
 
+
+def liens_dpe_secteurs():
+    return "<p>Le DPE par secteur : " + ", ".join(f'<a href="/diagnostics/dpe/{z[0]}/">DPE {e(z[1])}</a>' for z in ZONES) + '. <a href="/diagnostics/dpe/">Tout savoir sur le DPE</a>.</p>'
+
+# ---------------------------------------------------------------- page DPE Brest (contenu propre, rédigé)
+CHIFFRES_BREST_VERIFIES = False   # passer à True quand l'écart de comptage des DPE de Brest est expliqué : affiche alors le bloc de chiffres de la ville
+def page_dpe_brest(C, zd, cs, dans, lib, centre):
+    D = DIAG["dpe"]; zs = "brest"
+    brest = [c for c in C.values() if c["nom"] == "Brest"][0]; kb = chiffres(brest)
+    stats = (f"<h2>Le DPE à Brest en chiffres</h2>{tuiles(brest, kb)}{barres(brest)}{SRC}" if CHIFFRES_BREST_VERIFIES else "")
+    etapes = ('<div class="atouts"><div><strong>1. Un appel</strong><p>Nous vérifions avec vous les diagnostics réellement nécessaires pour votre vente ou votre location.</p></div>'
+              '<div><strong>2. La visite</strong><p>Environ une heure pour un appartement, une à deux heures pour une maison : relevé des surfaces, des murs, des fenêtres, du chauffage, de l\'eau chaude et de la ventilation.</p></div>'
+              '<div><strong>3. Le rapport</strong><p>Il vous est envoyé par e-mail. Le DPE est enregistré auprès de l\'ADEME, qui lui attribue un numéro, et il est valable dix ans.</p></div></div>')
+    faq = [("Mon immeuble brestois a un chauffage collectif : que dois-je fournir ?", "Les caractéristiques de l'installation collective, que le syndic peut vous transmettre : type et année de la chaudière ou de la sous-station, contrat d'entretien, et le DPE collectif de l'immeuble s'il existe."),
+           ("Mon studio a été classé F avant juillet 2024 : cette étiquette est-elle toujours valable ?", "Les seuils ont été adaptés au 1er juillet 2024 pour les logements de 40 m² ou moins. Si le DPE a été établi avant cette date, l'ADEME peut délivrer une attestation de nouvelle étiquette à partir du numéro du DPE, sans nouveau diagnostic. L'étiquette ne change pas dans tous les cas."),
+           ("Faut-il un audit énergétique pour vendre un appartement à Brest ?", "Non. L'audit énergétique ne concerne que les maisons individuelles et les immeubles en monopropriété classés E, F ou G. Pour un appartement, le DPE suffit."),
+           ("Combien de temps dure la visite ?", "Comptez environ une heure pour un appartement et une à deux heures pour une maison, selon la surface et les équipements.")]
+    body = f"""<p class="chapo">Vous vendez ou vous louez un logement à Brest ? Le DPE est obligatoire et son étiquette doit figurer dès l'annonce. Nos diagnostiqueurs, certifiés par Abcidia Certification, le réalisent à Brest et dans toute la métropole.</p>
+{BTN}
+{devis_p("Demander un devis pour un DPE à Brest", "DPE Brest")}
+<h2>Appartement à Brest : ce qu'il faut savoir avant le DPE</h2>
+<p>En immeuble collectif, le DPE d'un appartement dépend aussi d'éléments qui ne relèvent pas de vous. Mieux vaut les réunir avant la visite.</p>
+{ul(['<strong>Chauffage ou eau chaude collectifs</strong> : le diagnostiqueur a besoin des caractéristiques de l\'installation de l\'immeuble. Demandez-les au syndic : type et année de la chaudière ou de la sous-station, contrat d\'entretien.',
+     '<strong>Réseau de chaleur</strong> : si l\'immeuble y est raccordé, le DPE tient compte des caractéristiques du réseau.',
+     '<strong>DPE collectif de l\'immeuble</strong> : s\'il existe, signalez-le. La réglementation permet, sous conditions, d\'établir le DPE d\'un appartement à partir des données de l\'immeuble. <a href="/diagnostics/dpe-collectif/">En savoir plus sur le DPE collectif</a>.',
+     '<strong>Vente en copropriété</strong> : le <a href="/diagnostics/loi-carrez-boutin/">mesurage loi Carrez</a> est réalisé lors de la même visite.'])}
+<h2>Studios et petites surfaces</h2>
+<p>Depuis le 1er juillet 2024, les seuils des étiquettes sont adaptés pour les logements de 40 m² ou moins (arrêté du 25 mars 2024). Un DPE établi avant cette date peut voir son étiquette remplacée par une attestation de l'ADEME, sans nouveau diagnostic. C'est un point à vérifier avant de mettre un studio en location : les logements classés G ne peuvent plus être loués depuis le 1er janvier 2025, et les logements classés F ne le pourront plus à partir du 1er janvier 2028. <a href="/actualites/passoires-thermiques-calendrier-location/">Le calendrier complet</a>.</p>
+<h2>Les documents à préparer</h2>
+{ul(["Factures de travaux : isolation, fenêtres, chauffage, ventilation", "Notices et attestations d'entretien de la chaudière, de la pompe à chaleur ou du ballon d'eau chaude", "Règlement de copropriété, descriptif du lot, plans si vous en disposez", "Pour un chauffage collectif : les informations transmises par le syndic", "Le précédent DPE, s'il existe"])}
+<p>Ces justificatifs comptent : sans eux, la méthode de calcul impose des valeurs par défaut, généralement moins favorables.</p>
+<h2>Comment se déroule le diagnostic ?</h2>
+{etapes}
+{devis_p("Demander un devis pour un DPE à Brest", "DPE Brest")}
+<h2>2026, 2027 : le coefficient de l'électricité change</h2>
+<p>Le coefficient qui convertit l'électricité en énergie primaire est de 1,9 depuis le 1er janvier 2026. Il passera à 1,7 le 1er janvier 2027 (arrêté du 19 août 2026). Un logement chauffé à l'électricité peut alors changer de classe sans travaux. Les DPE en cours restent valables, et l'ADEME délivrera une attestation de nouvelle étiquette. <a href="/dpe-2027/">Estimez la vôtre avec notre simulateur</a>.</p>
+<h2>Vente ou location : les règles à connaître</h2>
+{ul(["Le DPE est obligatoire pour toute vente et toute mise en location, et son étiquette doit figurer dans l'annonce.", "Il est valable dix ans. Les DPE réalisés avant le 1er juillet 2021 ne sont plus valables.",
+     'Pour une maison classée E, F ou G, l\'<a href="/diagnostics/audit-energetique/brest/">audit énergétique</a> s\'ajoute au DPE lors d\'une vente.',
+     'Le DPE n\'est qu\'un des diagnostics d\'une vente : amiante, plomb, électricité, gaz, loi Carrez. <a href="/secteurs/brest/">Tous les diagnostics pour vendre à Brest</a>.'])}
+{stats}
+<h2>Brest et sa métropole</h2><p>Nous réalisons le DPE à {liens_communes(cs)}. <a href="{zpath(zs)}">Tout le secteur : {e(lib)}</a>.</p>
+<h2>Autres prestations à Brest et dans sa métropole</h2>{cartes([(f"/diagnostics/{x}/{zs}/", DIAG[x]["nom"] + " – " + centre, DIAG[x]["titre"] + " " + dans) for x in SERVICES_ZONE if x != "dpe"] + [(f"/projets/{p['slug']}/{zs}/", p["nom"], p["h1"] + " " + dans) for p in projets_de("dpe")])}
+<p>DPE dans les autres secteurs : {autres_zones("/diagnostics/dpe/", zs)}.</p>
+<h2>À lire sur ce sujet</h2>{liens_art(ART_DIAG["dpe"])}
+{faq_html(faq)}"""
+    page("/diagnostics/dpe/brest/", "DPE Brest : diagnostic de performance énergétique, devis gratuit | Arliane",
+         "DPE à Brest pour vendre ou louer : appartement en copropriété, maison, studio. Documents à préparer, déroulement de la visite, changement de 2027. Diagnostiqueurs certifiés, devis gratuit.",
+         "DPE à Brest : diagnostic de performance énergétique", body,
+         crumbs=[("Diagnostics", "/diagnostics/"), ("DPE", "/diagnostics/dpe/"), ("Brest", "/diagnostics/dpe/brest/")],
+         ld=[faq_ld(faq), {"@context": "https://schema.org", "@type": "Service", "name": "Diagnostic de performance énergétique (DPE) à Brest", "serviceType": D["titre"], "provider": {"@id": BASE + "/#agence"}, "areaServed": [{"@type": "City", "name": x["nom"]} for x in cs], "url": BASE + "/diagnostics/dpe/brest/"}])
+
 def pages_projets(zd, C, tout, kt):
     etapes = '<div class="atouts"><div><strong>1. Un appel</strong><p>Nous vérifions avec vous les diagnostics réellement nécessaires pour votre bien.</p></div><div><strong>2. Une visite</strong><p>Tous les diagnostics sont réalisés lors d\'un même rendez-vous.</p></div><div><strong>3. Vos rapports</strong><p>Ils vous sont envoyés par e-mail, prêts à être transmis au notaire, à l\'agence ou aux entreprises.</p></div></div>'
     page("/projets/", "Vente, location, travaux : vos diagnostics par projet | Arliane Diagnostic Nord Finistère", "Vous vendez une maison, un appartement, vous louez ou vous préparez des travaux ? La liste des diagnostics immobiliers à prévoir selon votre projet.",
@@ -479,6 +531,7 @@ def build():
     C = charger()
     B.COMMUNES_LD[:] = [c["nom"] for c in C.values()]
     B.extra_diag = extra_diag
+    B.liens_dpe_secteurs = liens_dpe_secteurs
     B.build()
     shutil.copy(B.SRC + "/quels.js", OUT + "/assets/quels.js")
     shutil.copytree(B.SRC + "/photos", OUT + "/assets/photos", dirs_exist_ok=True)
@@ -541,6 +594,8 @@ def build():
         # ---------------- service × secteur
         for s in SERVICES_ZONE:
             D = DIAG[s]
+            if s == "dpe" and zs == "brest":
+                page_dpe_brest(C, zd, cs, dans, lib, centre); continue
             if s == "dpe":
                 spec = f"""<h2>Le DPE {dans} en chiffres</h2>{tuiles(d, k)}{barres(d)}{SRC}
 <p>Sur les {nb(d['n'])} DPE enregistrés dans le secteur, {k['pefg']} % sont classés E, F ou G et {k['pelec']} % concernent des logements chauffés à l'électricité. Ces derniers sont directement concernés par le nouveau coefficient applicable au 1er janvier 2027 : <a href="/dpe-2027/">testez votre DPE avec notre simulateur</a>.</p>"""
@@ -684,6 +739,7 @@ def build():
 <div class="bandeau"><strong>Nouveau : votre DPE change-t-il de lettre au 1er janvier 2027 ?</strong> Saisissez votre numéro ADEME et découvrez votre future étiquette. <a href="/dpe-2027/">Essayer le simulateur gratuit</a></div>
 <h2>Tous vos diagnostics, un seul interlocuteur</h2>
 {cartes([(f'/diagnostics/{d["slug"]}/', d["nom"], d["intro"].split(". ")[0].rstrip(".") + ".") for d in DIAGS])}
+{liens_dpe_secteurs()}
 <h2>Pourquoi nous confier vos diagnostics ?</h2>
 <div class="atouts">
 <div><strong>Une agence locale</strong><p>Une équipe basée à Lesneven, qui connaît le bâti du Nord-Finistère et se déplace chez vous rapidement.</p></div>
