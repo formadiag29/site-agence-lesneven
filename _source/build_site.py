@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Génère le site statique de l'agence Arliane Diagnostic Immobilier – Lesneven."""
+"""Génère le site statique de l'agence Arliane Diagnostic Nord Finistère (SAS LIBERGE), Lesneven."""
 import hashlib, json, os, re, shutil, html
 from datetime import date
 
@@ -19,9 +19,10 @@ LEGAL = dict(
     siret="830 354 775 00017",              # siège, Lanarvily
     rcs="830 354 775 R.C.S. Brest",
     tva="FR62830354775",
-    assureur="",                            # À RENSEIGNER : assureur responsabilité civile professionnelle
-    police="",                              # À RENSEIGNER : n° de police
-    certifications="",                      # À RENSEIGNER : organisme(s) de certification et n° de certificat des diagnostiqueurs
+    assureur="AXA France IARD",             # source : attestation RC professionnelle 2026 fournie par J. Liberge (via LSN Assurances)
+    police="10583931804C107",
+    garantie="1 000 000 € par sinistre et 2 000 000 € par année d'assurance",   # attestation valable du 01/01/2026 au 31/12/2026 : à revoir au renouvellement
+    certifications="Abcidia Certification", # organisme indiqué par J. Liberge ; n° de certificats : À RENSEIGNER si souhaité
 )
 COMMUNES_LD = []   # rempli par build_v2 : communes desservies
 extra_diag = lambda slug: ""   # remplacé par build_v2 : maillage des pages prestations
@@ -376,7 +377,7 @@ def build():
          "Diagnostic immobilier à Lesneven et dans le Nord-Finistère", body, ld=[faq_ld(faq)])
 
     # ---- diagnostics
-    page("/diagnostics/", "Tous nos diagnostics immobiliers | Arliane Lesneven", "Tous les diagnostics immobiliers de notre agence de Lesneven : DPE, amiante, plomb, électricité, gaz, état parasitaire, Carrez, ERP, audit énergétique, DTG.",
+    page("/diagnostics/", "Tous nos diagnostics immobiliers | Arliane Diagnostic Nord Finistère", "Tous les diagnostics immobiliers de notre agence de Lesneven : DPE, amiante, plomb, électricité, gaz, état parasitaire, Carrez, ERP, audit énergétique, DTG.",
          "Nos diagnostics immobiliers", f"<p class=\"chapo\">Du DPE à l'audit énergétique, nous réalisons tous les diagnostics exigés pour une vente, une location, des travaux ou la gestion d'une copropriété.</p>{cartes(cartes_diag)}<p>Vous ne savez pas lesquels vous concernent ? Consultez notre <a href=\"/vente-location/\">tableau vente ou location</a> ou appelez-nous au <a href=\"tel:{TEL_LINK}\">{TEL}</a>.</p>",
          crumbs=[("Diagnostics", "/diagnostics/")])
     for d in DIAGS:
@@ -395,7 +396,7 @@ def build():
              ld=[faq_ld(d["faq"]), {"@context": "https://schema.org", "@type": "Service", "name": d["titre"], "serviceType": d["titre"], "description": d["desc"], "provider": {"@id": BASE + "/#agence"}, "areaServed": [{"@type": "City", "name": n} for n in PRINCIPALES] + [{"@type": "AdministrativeArea", "name": "Nord-Finistère"}], "url": BASE + f"/diagnostics/{d['slug']}/"}])
 
     # ---- secteurs
-    page("/secteurs/", "Secteurs d'intervention Nord-Finistère | Arliane Lesneven", "Notre agence de Lesneven réalise vos diagnostics immobiliers à Brest, Landerneau, Plabennec, Landivisiau, Lannilis et dans tout le Nord-Finistère.",
+    page("/secteurs/", "Secteurs d'intervention Nord-Finistère | Arliane Diagnostic Nord Finistère", "Notre agence de Lesneven réalise vos diagnostics immobiliers à Brest, Landerneau, Plabennec, Landivisiau, Lannilis et dans tout le Nord-Finistère.",
          "Nos secteurs d'intervention", f"<p class=\"chapo\">Basés à Lesneven, nous nous déplaçons dans tout le Nord-Finistère, de la côte des Abers à la métropole brestoise et au pays de Landivisiau.</p>{cartes(cartes_villes)}<p>Votre commune n'apparaît pas ? Appelez-nous au <a href=\"tel:{TEL_LINK}\">{TEL}</a> : nous intervenons très probablement chez vous.</p>",
          crumbs=[("Secteurs", "/secteurs/")])
     for v in VILLES:
@@ -419,7 +420,7 @@ def build():
 <h2>Vous louez</h2><p>Le dossier est annexé au bail. Attention au <a href="/diagnostics/dpe/">DPE</a> : les logements classés G ne peuvent plus être mis en location depuis le 1er janvier 2025, et le calendrier se poursuit pour les classes F puis E.</p>
 <h2>Vous préparez des travaux</h2><p>Avant d'intervenir sur un bâtiment dont le permis est antérieur au 1er juillet 1997, un <a href="/diagnostics/amiante/">repérage amiante avant travaux</a> est obligatoire.</p>
 {faq_html(faq)}"""
-    page("/vente-location/", "Diagnostics obligatoires vente et location | Arliane Lesneven", "Quels diagnostics pour vendre ou louer ? Tableau complet des diagnostics immobiliers obligatoires et de leur durée de validité, par notre agence de Lesneven.",
+    page("/vente-location/", "Diagnostics obligatoires vente et location | Arliane Diagnostic Nord Finistère", "Quels diagnostics pour vendre ou louer ? Tableau complet des diagnostics immobiliers obligatoires et de leur durée de validité, par notre agence de Lesneven.",
          "Vente ou location : quels diagnostics obligatoires ?", body, crumbs=[("Vente ou location", "/vente-location/")], ld=[faq_ld(faq)])
 
     # ---- professionnels
@@ -433,7 +434,7 @@ def build():
 <div><strong>Un outil pour vos clients</strong><p>Notre <a href="/dpe-2027/">simulateur DPE 2027</a> est en accès libre : partagez-le à vos collaborateurs et à vos clients.</p></div>
 </div>
 <h2>Travaillons ensemble</h2><p>Appelez-nous au <a href="tel:{TEL_LINK}">{TEL}</a> ou écrivez-nous à <a href="mailto:{MAIL}">{MAIL}</a> pour mettre en place un fonctionnement adapté à votre activité.</p>"""
-    page("/professionnels/", "Diagnostics immobiliers pour professionnels | Arliane Lesneven", "Partenaire diagnostic des agences immobilières, notaires, syndics et bailleurs du Nord-Finistère : délais courts, DTG, PPPT, amiante avant travaux.",
+    page("/professionnels/", "Diagnostics immobiliers pour professionnels | Arliane Diagnostic Nord Finistère", "Partenaire diagnostic des agences immobilières, notaires, syndics et bailleurs du Nord-Finistère : délais courts, DTG, PPPT, amiante avant travaux.",
          "Diagnostics immobiliers pour les professionnels", body, crumbs=[("Professionnels", "/professionnels/")])
 
     # ---- simulateur DPE 2027
@@ -445,10 +446,12 @@ def build():
     body = f"""<p class="chapo">Au 1er janvier 2027, le coefficient de conversion de l'électricité utilisé dans le DPE passe de 1,9 à 1,7. De nombreux logements chauffés à l'électricité vont gagner une classe énergétique, sans travaux. Vérifiez gratuitement ce que cela change pour le vôtre.</p>
 <style>#dpe2027 .entete,#dpe2027 .pied{{display:none}}#dpe2027{{margin:24px 0;padding:0;max-width:760px}}</style>
 {bloc}
+<h2>Le texte de référence</h2><p>Arrêté du 19 août 2026 modifiant le facteur de conversion de l'énergie finale en énergie primaire de l'électricité relatif au diagnostic de performance énergétique (NOR : VLOL2617030A), publié au Journal officiel du 26 août 2026. Il remplace la valeur 1,9 par 1,7 dans la méthode de calcul du DPE (annexe 3 de l'arrêté du 31 mars 2021) et entre en vigueur le 1er janvier 2027. Il s'applique aussi aux audits énergétiques.</p>
+<p>Pour les DPE en cours de validité, l'arrêté prévoit une attestation de nouvelle étiquette, générée par l'ADEME sur le site de l'Observatoire DPE-Audit. Sans attestation, le DPE reste valable jusqu'à sa date de fin de validité : il n'est pas nécessaire de le refaire.</p>
 <h2>Pourquoi l'étiquette change-t-elle ?</h2><p>Le DPE exprime la consommation en énergie primaire. Pour l'électricité, chaque kilowattheure consommé est multiplié par un coefficient : 2,3 jusqu'en 2025, 1,9 depuis le 1er janvier 2026 et 1,7 à partir du 1er janvier 2027. La consommation affichée baisse donc mécaniquement pour les logements électriques.</p>
 <h2>Ce que cela change pour vous</h2>{ul(["Un logement classé G qui passe en F peut de nouveau être proposé à la location.", "Une maison qui sort des classes E, F ou G n'est plus soumise à l'audit énergétique obligatoire à la vente.", "Une meilleure étiquette valorise votre bien dans l'annonce."])}
 {faq_html(faq)}"""
-    page("/dpe-2027/", "Simulateur DPE 2027 par numéro ADEME | Arliane Lesneven", "Simulateur gratuit : saisissez le numéro ADEME de votre DPE et découvrez votre étiquette énergie au 1er janvier 2027 (coefficient électricité 1,7).",
+    page("/dpe-2027/", "Simulateur DPE 2027 par numéro ADEME | Arliane Diagnostic Nord Finistère", "Simulateur gratuit : saisissez le numéro ADEME de votre DPE et découvrez votre étiquette énergie au 1er janvier 2027 (coefficient électricité 1,7).",
          "Simulateur DPE 2027 : votre nouvelle étiquette énergie", body, crumbs=[("DPE 2027", "/dpe-2027/")], ld=[faq_ld(faq)])
 
     # ---- devis
@@ -464,7 +467,7 @@ def build():
 <h2>Les informations utiles pour votre devis</h2>{ul(["Votre projet : vente, location, travaux ou copropriété", "Le type de bien et sa surface approximative", "L'année de construction", "Le mode de chauffage et l'âge des installations électriques et de gaz", "L'adresse du bien"])}
 <p>Vous ne savez pas quels diagnostics vous concernent ? <a href="/quels-diagnostics/">Répondez à quelques questions</a> pour obtenir la liste.</p>
 <p class="note">Du lundi au vendredi, de 9h à 12h et de 14h à 18h.</p>"""
-    page("/devis/", "Devis gratuit diagnostic immobilier | Arliane Lesneven", "Devis gratuit et sans engagement pour vos diagnostics immobiliers à Lesneven et dans le Nord-Finistère : par téléphone ou par e-mail, réponse rapide.",
+    page("/devis/", "Devis gratuit diagnostic immobilier | Arliane Diagnostic Nord Finistère", "Devis gratuit et sans engagement pour vos diagnostics immobiliers à Lesneven et dans le Nord-Finistère : par téléphone ou par e-mail, réponse rapide.",
          "Devis gratuit pour vos diagnostics", body, crumbs=[("Devis", "/devis/")])
 
     # ---- contact
@@ -482,7 +485,7 @@ def build():
 
     # ---- mentions légales
     def ligne(lib, val): return f"<br>{lib} : {e(val)}" if val else ""
-    assur = ligne("Assurance responsabilité civile professionnelle", " – police n° ".join(x for x in (LEGAL["assureur"], LEGAL["police"]) if x))
+    assur = ligne("Assurance responsabilité civile professionnelle", " – police n° ".join(x for x in (LEGAL["assureur"], LEGAL["police"]) if x)) + ligne("Montant de la garantie", LEGAL.get("garantie", ""))
     certif = ligne("Certification des diagnostiqueurs", LEGAL["certifications"])
     body = f"""<h2>Éditeur du site</h2><p>{RAISON}, exerçant sous le nom commercial {e(NOM)}, membre du réseau Arliane Diagnostic Immobilier<br>Siège social : 36 Penarguear, 29260 Lanarvily<br>Agence : {RUE}, {CP} {VILLE}<br>Téléphone : {TEL} – E-mail : {MAIL}<br>Forme juridique : société par actions simplifiée{ligne("Capital social", LEGAL["capital"])}{ligne("SIREN", LEGAL["siren"])}{ligne("SIRET du siège", LEGAL["siret"])}{ligne("RCS", LEGAL["rcs"])}{ligne("N° de TVA intracommunautaire", LEGAL["tva"])}<br>Directeur de la publication : Julien Liberge</p>
 <h2>Assurance et certifications</h2><p>Les diagnostics sont réalisés par des diagnostiqueurs certifiés par un organisme accrédité et couverts par une assurance de responsabilité civile professionnelle, comme l'exige la réglementation.{assur}{certif}</p>

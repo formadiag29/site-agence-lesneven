@@ -332,7 +332,7 @@ LOCAL = {
 
 def pages_projets(zd, C, tout, kt):
     etapes = '<div class="atouts"><div><strong>1. Un appel</strong><p>Nous vérifions avec vous les diagnostics réellement nécessaires pour votre bien.</p></div><div><strong>2. Une visite</strong><p>Tous les diagnostics sont réalisés lors d\'un même rendez-vous.</p></div><div><strong>3. Vos rapports</strong><p>Ils vous sont envoyés par e-mail, prêts à être transmis au notaire, à l\'agence ou aux entreprises.</p></div></div>'
-    page("/projets/", "Vente, location, travaux : vos diagnostics par projet | Arliane Lesneven", "Vous vendez une maison, un appartement, vous louez ou vous préparez des travaux ? La liste des diagnostics immobiliers à prévoir selon votre projet.",
+    page("/projets/", "Vente, location, travaux : vos diagnostics par projet | Arliane Diagnostic Nord Finistère", "Vous vendez une maison, un appartement, vous louez ou vous préparez des travaux ? La liste des diagnostics immobiliers à prévoir selon votre projet.",
          "Vos diagnostics selon votre projet", f'<p class="chapo">Chaque projet a sa liste de diagnostics. Choisissez le vôtre.</p>{cartes([(f"/projets/{p["slug"]}/", p["nom"], p["intro"].split(". ")[0] + ".") for p in PROJETS])}<p>Vous gérez une copropriété ? Voir nos pages <a href="/diagnostics/pppt/">PPPT</a>, <a href="/diagnostics/dtg/">DTG</a> et <a href="/diagnostics/dpe-collectif/">DPE collectif</a>.</p>',
          crumbs=[("Votre projet", "/projets/")])
     for p in PROJETS:
@@ -344,7 +344,7 @@ def pages_projets(zd, C, tout, kt):
 <h2>Comment ça se passe ?</h2>{etapes}
 <h2>Par secteur</h2>{cartes([(f"/projets/{p['slug']}/{z[0]}/", z[1], p['nom'] + ' ' + z[3]) for z in ZONES])}
 {faq_html(p['faq'])}"""
-        page(f"/projets/{p['slug']}/", f"{p['seo']} : la liste complète | Arliane Lesneven", f"{p['h1']} dans le Nord-Finistère : liste des diagnostics obligatoires, durées de validité et intervention rapide. Devis gratuit.",
+        page(f"/projets/{p['slug']}/", f"{p['seo']} : la liste complète | Arliane Diagnostic Nord Finistère", f"{p['h1']} dans le Nord-Finistère : liste des diagnostics obligatoires, durées de validité et intervention rapide. Devis gratuit.",
              p["h1"], body, crumbs=[("Votre projet", "/projets/"), (p["nom"], f"/projets/{p['slug']}/")], ld=[faq_ld(p["faq"])])
         for zs, centre, lib, dans, idx in ZONES:
             d = zd[zs]; k = chiffres(d); cs = sorted([C[i] for i in idx if i in C], key=lambda c: -c["n"])
@@ -454,7 +454,7 @@ def build():
 
     # ---------------- hub secteurs
     blocs = "".join(f'<h2><a href="{zpath(z[0])}">{e(z[2])}</a></h2><p>{liens_communes([C[i] for i in z[4] if i in C])}.</p>' for z in ZONES)
-    page("/secteurs/", "Secteurs d'intervention Nord-Finistère | Arliane Lesneven", f"Notre agence de Lesneven réalise vos diagnostics immobiliers dans {len(C)} communes du Nord-Finistère : Brest, Landerneau, Landivisiau, Morlaix, les Abers, le Léon.",
+    page("/secteurs/", "Secteurs d'intervention Nord-Finistère | Arliane Diagnostic Nord Finistère", f"Notre agence de Lesneven réalise vos diagnostics immobiliers dans {len(C)} communes du Nord-Finistère : Brest, Landerneau, Landivisiau, Morlaix, les Abers, le Léon.",
          "Nos secteurs d'intervention dans le Nord-Finistère", f"""<p class="chapo">Basés à Lesneven, nous intervenons dans tout le Nord-Finistère, de la pointe Saint-Mathieu à la baie de Morlaix.</p>
 {cartes([(zpath(z[0]), z[2], f"{nb(zd[z[0]]['n'])} DPE analysés") for z in ZONES])}{blocs}
 <p>Votre commune n'apparaît pas ? Appelez-nous au <a href="tel:{TEL_LINK}">{TEL}</a> : nous intervenons très probablement chez vous.</p>""", crumbs=[("Secteurs", "/secteurs/")], full=True)
@@ -483,14 +483,14 @@ def build():
     # ---------------- questionnaire
     faq = [("Cette liste est-elle officielle ?", "Elle est indicative : elle repose sur vos réponses. Nous la confirmons gratuitement avec vous par téléphone avant toute intervention."),
            ("Et la mérule ou les termites ?", "Nous réalisons un <a href=\"/diagnostics/etat-parasitaire/\">état parasitaire</a> sur tous les biens : il recherche la mérule et les insectes du bois. Notre secteur n'est pas concerné par les termites.")]
-    page("/quels-diagnostics/", "Quels diagnostics pour mon bien ? Liste en 1 minute | Arliane Lesneven", "Vente, location, travaux ou copropriété : répondez à six questions et obtenez la liste des diagnostics immobiliers obligatoires pour votre bien.",
+    page("/quels-diagnostics/", "Quels diagnostics pour mon bien ? Liste en 1 minute | Arliane Diagnostic Nord Finistère", "Vente, location, travaux ou copropriété : répondez à six questions et obtenez la liste des diagnostics immobiliers obligatoires pour votre bien.",
          "Quels diagnostics immobiliers pour mon bien ?", f"""<p class="chapo">Répondez à six questions : nous vous indiquons les diagnostics à faire réaliser pour votre projet.</p>
 {QUESTIONNAIRE}
 <h2>Vous préférez un tableau ?</h2><p>Notre page <a href="/vente-location/">vente ou location</a> récapitule tous les diagnostics obligatoires et leurs durées de validité.</p>
 {faq_html(faq)}""", crumbs=[("Quels diagnostics ?", "/quels-diagnostics/")], ld=[faq_ld(faq)])
 
     # ---------------- actualités
-    page("/actualites/", "Actualités du diagnostic immobilier dans le Finistère | Arliane Lesneven", "DPE 2027, passoires thermiques, audit énergétique, PPPT, radon, mérule : l'actualité du diagnostic immobilier expliquée pour le Nord-Finistère.",
+    page("/actualites/", "Actualités du diagnostic immobilier dans le Finistère | Arliane Diagnostic Nord Finistère", "DPE 2027, passoires thermiques, audit énergétique, PPPT, radon, mérule : l'actualité du diagnostic immobilier expliquée pour le Nord-Finistère.",
          "Actualités du diagnostic immobilier", f'<p class="chapo">La réglementation évolue vite. Nous l\'expliquons simplement, avec les chiffres du Nord-Finistère.</p>{cartes([("/actualites/" + a["slug"] + "/", a["titre"], a["desc"]) for a in ARTICLES])}',
          crumbs=[("Actualités", "/actualites/")])
     for a in ARTICLES:
@@ -544,7 +544,7 @@ def build():
 <h2>Pourquoi nous confier vos diagnostics ?</h2>
 <div class="atouts">
 <div><strong>Une agence locale</strong><p>Une équipe basée à Lesneven, qui connaît le bâti du Nord-Finistère et se déplace chez vous rapidement.</p></div>
-<div><strong>Des diagnostiqueurs certifiés</strong><p>Chaque diagnostic est réalisé par un opérateur certifié et assuré, comme l'exige la réglementation.</p></div>
+<div><strong>Des diagnostiqueurs certifiés</strong><p>Chaque diagnostic est réalisé par un opérateur certifié par Abcidia Certification et assuré, comme l'exige la réglementation.</p></div>
 <div><strong>Du DPE à la copropriété</strong><p>Particuliers, professionnels, syndics : un seul interlocuteur, du simple DPE à l'audit énergétique, au DTG et au PPPT.</p></div>
 <div><strong>La force d'un réseau</strong><p>Membre du réseau national Arliane Diagnostic Immobilier, spécialiste du diagnostic depuis 2007.</p></div>
 </div>
