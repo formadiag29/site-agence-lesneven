@@ -421,6 +421,80 @@ def _saintrenan(c, k, kt, tout):
            ("Intervenez-vous au Conquet, à Ploudalmézeau ou à Plouarzel ?", "Oui, dans tout le pays d'Iroise : " + ", ".join(f'<a href="/secteurs/{slug(n)}/">{n}</a>' for n in autour) + ".")]
     return "", bas, faq
 
+
+# ---------------------------------------------------------------- quatre communes de Brest métropole
+def _guipavas(c, k, kt, tout):
+    p06 = pct(c["p06"], c["n"]); p4888 = pct(c["p4874"] + c["p7588"], c["n"])
+    bas = f"""<h2>Maison récente ou maison plus ancienne à Guipavas : la liste des diagnostics change</h2>
+<p>{echantillon(c, "à Guipavas")}, {k["pmaison"]} % concernent des maisons. {p06} % portent sur des logements construits depuis 2006 et {p4888} % sur des logements construits entre 1948 et 1988. {LIMITE} Ces deux générations de maisons n'appellent pas le même dossier de vente :</p>
+{ul(['<strong>Maison construite depuis 2006</strong> : ni amiante ni plomb à prévoir. Le DPE et l\'état des risques suffisent souvent, auxquels s\'ajoutent les diagnostics <a href="/diagnostics/electricite/">électricité</a> et <a href="/diagnostics/gaz/">gaz</a> dès que les installations ont plus de quinze ans.',
+     '<strong>Maison dont le permis de construire est antérieur à juillet 1997</strong> : le <a href="/diagnostics/amiante/">diagnostic amiante</a> s\'ajoute pour la vente.',
+     f'<strong>Maison classée E, F ou G</strong> : l\'<a href="/diagnostics/audit-energetique/brest/">audit énergétique</a> est obligatoire pour la vendre. {nb(k["efg"])} DPE sont dans ce cas à Guipavas, soit {k["pefg"]} % contre {kt["pefg"]} % dans l\'ensemble des communes que nous suivons.'])}
+<h2>Électricité ou gaz : deux situations presque à égalité</h2>
+<p>{k["pelec"]} % des logements diagnostiqués à Guipavas sont chauffés à l'électricité et {k["pgaz"]} % au gaz. Pour les premiers, le coefficient de l'électricité passe de 1,9 à 1,7 au 1er janvier 2027 : l'étiquette peut changer sans travaux. <a href="/dpe-2027/">Estimez la nouvelle étiquette avec le numéro ADEME de votre DPE</a> avant de commander un audit énergétique. Pour les seconds, pensez au diagnostic gaz si l'installation a plus de quinze ans.</p>
+<p>Pour la liste complète selon votre bien : <a href="/projets/vente-maison/brest/">diagnostics pour vendre une maison dans la métropole de Brest</a> · <a href="/diagnostics/dpe/brest/">le DPE à Brest et dans la métropole</a>.</p>"""
+    faq = [("Ma maison de Guipavas date de 2010 : quels diagnostics pour la vendre ?", "Le DPE et l'état des risques, ainsi que les diagnostics électricité et gaz si les installations ont plus de quinze ans. Ni l'amiante ni le plomb ne sont requis pour une maison de cette époque. Nous réalisons aussi l'état parasitaire sur tous les biens."),
+           ("Ma maison est chauffée à l'électricité et classée E : dois-je faire un audit énergétique ?", "Oui si vous la vendez aujourd'hui : l'audit est obligatoire pour les maisons classées E, F ou G. Vérifiez toutefois l'effet du coefficient applicable au 1er janvier 2027 : <a href=\"/dpe-2027/\">notre simulateur</a> estime la nouvelle étiquette à partir du numéro ADEME de votre DPE."),
+           ("Faut-il un diagnostic amiante pour une maison des années 1980 à Guipavas ?", "Oui pour une vente : le diagnostic amiante concerne tous les logements dont le permis de construire a été délivré avant le 1er juillet 1997.")]
+    return "", bas, faq
+
+def _plouzane(c, k, kt, tout):
+    p7588 = pct(c["p7588"], c["n"])
+    bas = f"""<h2>Les maisons des années 1975-1988 à Plouzané : amiante oui, plomb non</h2>
+<p>{echantillon(c, "à Plouzané")}, {p7588} % concernent des logements construits entre 1975 et 1988 : c'est la période la plus représentée dans la commune. {LIMITE} Pour un logement de cette époque, le dossier de vente comprend le plus souvent :</p>
+{ul(['le <a href="/diagnostics/amiante/">diagnostic amiante</a>, requis dès lors que le permis de construire est antérieur à juillet 1997 ;',
+     'les diagnostics <a href="/diagnostics/gaz/">gaz</a> et <a href="/diagnostics/electricite/">électricité</a>, les installations ayant plus de quinze ans ;',
+     'le <a href="/diagnostics/dpe/brest/">DPE</a> et l\'état des risques, obligatoires dans tous les cas ;',
+     'en revanche, le constat plomb n\'est pas requis : il ne concerne que les logements construits avant 1949.'])}
+<h2>Le gaz, première énergie de chauffage</h2>
+<p>{k["pgaz"]} % des logements diagnostiqués à Plouzané sont chauffés au gaz, contre {kt["pgaz"]} % dans l'ensemble des communes que nous suivons. Le diagnostic gaz porte sur l'installation intérieure : tuyauteries fixes, raccordement des appareils, ventilation des locaux. Pour le DPE, préparez la facture ou la notice de la chaudière et son attestation d'entretien : elles permettent de retenir ses caractéristiques réelles.</p>
+<h2>Vente d'une maison : l'audit énergétique concerne une minorité de biens</h2>
+<p>{nb(k["efg"])} DPE sont classés E, F ou G à Plouzané, soit {k["pefg"]} % contre {kt["pefg"]} % dans l'ensemble des communes que nous suivons. L'<a href="/diagnostics/audit-energetique/brest/">audit énergétique</a> n'est obligatoire que pour les maisons dans ce cas : faites établir le DPE en premier, vous saurez si l'audit est nécessaire.</p>
+<h2>Mettre un logement en location à Plouzané</h2>
+<p>Le Technopôle Brest-Iroise se trouve sur la commune. Pour une mise en location, le dossier comprend le DPE, l'état des risques, les diagnostics électricité et gaz si les installations ont plus de quinze ans, et la surface habitable. <a href="/projets/location/brest/">Diagnostics pour louer dans la métropole de Brest</a>.</p>"""
+    faq = [("Ma maison de Plouzané date de 1982 : quels diagnostics pour la vendre ?", "Le DPE, l'état des risques, le diagnostic amiante, ainsi que les diagnostics électricité et gaz puisque les installations ont plus de quinze ans. Le constat plomb n'est pas requis pour un logement construit après 1949. L'audit énergétique s'ajoute si la maison est classée E, F ou G."),
+           ("Ma chaudière gaz a été remplacée : est-ce pris en compte dans le DPE ?", "Oui, à condition de présenter un justificatif : facture d'installation, notice ou attestation d'entretien mentionnant le modèle. En l'absence de justificatifs, certaines caractéristiques peuvent être renseignées à partir de valeurs conventionnelles, susceptibles d'influencer le résultat du DPE."),
+           ("Quels diagnostics pour louer un appartement à Plouzané ?", "Le DPE, l'état des risques, les diagnostics électricité et gaz si les installations ont plus de quinze ans, et la surface habitable. Le constat plomb ne concerne que les logements construits avant 1949.")]
+    return "", bas, faq
+
+def _plougastel(c, k, kt, tout):
+    bas = f"""<h2>Maisons anciennes de la presqu'île : les diagnostics qui s'ajoutent</h2>
+<p>{echantillon(c, "à Plougastel-Daoulas")}, {k["pav48"]} % concernent des logements construits avant 1948, contre {kt["pav48"]} % dans l'ensemble des communes que nous suivons, et {k["pmaison"]} % sont des maisons. {LIMITE} Pour une maison ancienne, du bourg ou d'un village de la presqu'île, le dossier de vente s'allonge :</p>
+{ul(['le <a href="/diagnostics/plomb/">constat de risque d\'exposition au plomb</a>, obligatoire pour tout logement construit avant 1949, à la vente comme à la location ;',
+     'le <a href="/diagnostics/amiante/">diagnostic amiante</a> : une maison ancienne a souvent reçu des matériaux plus récents (conduits, toitures d\'annexes, revêtements de sol) ;',
+     'l\'<a href="/diagnostics/etat-parasitaire/">état parasitaire</a>, que nous réalisons sur tous les biens : il recherche notamment les champignons du bois, comme la mérule, et les insectes xylophages ;',
+     'les diagnostics <a href="/diagnostics/electricite/">électricité</a> et <a href="/diagnostics/gaz/">gaz</a> si les installations ont plus de quinze ans.'])}
+<h2>Près d'un DPE sur quatre classé E, F ou G</h2>
+<p>{nb(k["efg"])} DPE sont classés E, F ou G à Plougastel-Daoulas, soit {k["pefg"]} % contre {kt["pefg"]} % dans l'ensemble des communes que nous suivons. Pour vendre une maison dans ce cas, l'<a href="/diagnostics/audit-energetique/brest/">audit énergétique</a> est obligatoire et doit être remis à l'acquéreur dès la première visite.</p>
+<p>Deux situations méritent une vérification avant de le commander :</p>
+{ul([f'<strong>Chauffage électrique</strong> ({k["pelec"]} % des logements diagnostiqués) : avec le coefficient applicable au 1er janvier 2027, l\'étiquette peut changer. <a href="/dpe-2027/">Vérifiez-le avec le numéro ADEME de votre DPE</a>.',
+     f'<strong>Chauffage au fioul</strong> ({k["pfioul"]} % des logements diagnostiqués) : l\'audit chiffre le remplacement de la chaudière et les travaux d\'isolation à mener en priorité.'])}
+<p>Pour la liste complète selon votre bien : <a href="/projets/vente-maison/brest/">diagnostics pour vendre une maison dans la métropole de Brest</a>.</p>"""
+    faq = [("Je vends une maison en pierre d'avant 1949 à Plougastel-Daoulas : quels diagnostics ?", "Le DPE, l'état des risques, le constat plomb, le diagnostic amiante, ainsi que les diagnostics électricité et gaz si les installations ont plus de quinze ans. L'audit énergétique s'ajoute si la maison est classée E, F ou G. Nous réalisons aussi l'état parasitaire sur tous les biens."),
+           ("L'état parasitaire est-il obligatoire pour vendre à Plougastel-Daoulas ?", "Nous le réalisons sur tous les biens que nous diagnostiquons. Il renseigne l'acquéreur sur la présence de champignons du bois, comme la mérule, et d'insectes xylophages. Votre notaire vous indiquera s'il est exigé pour votre vente."),
+           ("Ma maison chauffée au fioul est classée F : que contient l'audit énergétique ?", "L'audit propose des scénarios de travaux chiffrés, par étapes, pour améliorer la classe du logement : isolation, ventilation, remplacement du système de chauffage. Il est valable cinq ans.")]
+    return "", bas, faq
+
+def _relecq(c, k, kt, tout):
+    p06 = pct(c["p06"], c["n"])
+    bas = f"""<h2>Vendre un appartement au Relecq-Kerhuon : ce qui s'ajoute en copropriété</h2>
+<p>{echantillon(c, "au Relecq-Kerhuon")}, {k["pappart"]} % concernent des appartements et {k["pmaison"]} % des maisons. {LIMITE} En copropriété, le dossier de vente comprend des éléments propres :</p>
+{ul(['le <a href="/diagnostics/loi-carrez-boutin/">mesurage loi Carrez</a> de la partie privative, obligatoire pour la vente d\'un lot de copropriété ;',
+     'le diagnostic amiante de l\'appartement si le permis de construire de l\'immeuble est antérieur à juillet 1997 ; le syndic tient par ailleurs à disposition le dossier amiante des parties communes ;',
+     'le <a href="/diagnostics/dpe/brest/">DPE</a> du logement : si l\'immeuble dispose d\'un <a href="/diagnostics/dpe-collectif/">DPE collectif</a>, signalez-le, mais il ne remplace pas automatiquement le DPE de votre appartement ;',
+     'pas d\'audit énergétique : il ne s\'applique pas aux lots de copropriété.'])}
+<p><a href="/projets/vente-appartement/brest/">Diagnostics pour vendre un appartement dans la métropole de Brest</a>.</p>
+<h2>Près d'un logement sur trois construit depuis 2006</h2>
+<p>{p06} % des DPE enregistrés au Relecq-Kerhuon portent sur des logements construits depuis 2006. Pour ces biens, ni amiante ni plomb. Les diagnostics électricité et gaz deviennent en revanche obligatoires dès que les installations ont plus de quinze ans, ce qui est désormais le cas des logements livrés avant 2011.</p>
+<h2>Chauffage au gaz : ce qu'il faut préparer</h2>
+<p>{k["pgaz"]} % des logements diagnostiqués sont chauffés au gaz, contre {kt["pgaz"]} % dans l'ensemble des communes que nous suivons. Si le chauffage ou l'eau chaude sont collectifs, demandez au syndic les caractéristiques de l'installation de l'immeuble avant la visite. S'ils sont individuels, préparez la facture ou l'attestation d'entretien de votre chaudière.</p>
+<h2>Syndics et conseils syndicaux</h2>
+<p>Nous réalisons le <a href="/diagnostics/pppt/brest/">projet de plan pluriannuel de travaux (PPPT)</a> et le <a href="/diagnostics/dpe-collectif/">DPE collectif</a> des copropriétés du Relecq-Kerhuon.</p>"""
+    faq = [("Je vends un appartement au Relecq-Kerhuon : faut-il un audit énergétique ?", "Non lorsque l'appartement est vendu comme lot de copropriété : l'audit énergétique réglementaire ne s'applique pas aux lots de copropriété. Le DPE reste obligatoire, avec les autres diagnostics de la vente."),
+           ("Mon appartement date de 2009 : quels diagnostics pour le vendre ?", "Le DPE, l'état des risques et le mesurage loi Carrez, ainsi que les diagnostics électricité et gaz puisque les installations ont plus de quinze ans. Ni l'amiante ni le plomb ne sont requis pour un immeuble de cette époque."),
+           ("L'immeuble a déjà un DPE collectif : dois-je refaire un DPE pour mon appartement ?", "Le DPE collectif ne remplace pas automatiquement le DPE de votre logement. La réglementation permet, sous conditions, d'établir le DPE d'un appartement à partir des données de l'immeuble : le diagnostiqueur vérifie si c'est possible dans votre cas.")]
+    return "", bas, faq
+
 LOCAL = {
  "Lesneven": dict(f=_lesneven, titre="DPE et diagnostic immobilier à Lesneven : agence en centre-ville | Arliane",
     desc=lambda c, k: f"DPE, amiante, plomb, électricité, gaz, audit énergétique : tous vos diagnostics immobiliers à Lesneven. Agence au 15 rue Général de Gaulle. {nb(c['n'])} DPE analysés. Devis gratuit."),
@@ -441,6 +515,18 @@ LOCAL = {
  "Saint-Renan": dict(f=_saintrenan, devis=True, titre="Diagnostic immobilier Saint-Renan : DPE, électricité, gaz, audit énergétique | Arliane",
     accroche="Nous réalisons vos diagnostics immobiliers à Saint-Renan et dans le pays d'Iroise, de Ploudalmézeau au Conquet, pour les ventes, les locations et les copropriétés.",
     desc=lambda c, k: f"Diagnostic immobilier à Saint-Renan : DPE, électricité, gaz, audit énergétique, effet du coefficient 2027. {nb(c['n'])} DPE analysés, {k['pelec']} % chauffés à l'électricité. Devis gratuit."),
+ "Guipavas": dict(f=_guipavas, devis=True, titre="Diagnostic immobilier Guipavas : DPE, audit énergétique, électricité, gaz | Arliane",
+    accroche="Nous réalisons vos diagnostics immobiliers à Guipavas, pour la vente ou la location d'une maison ou d'un appartement, des lotissements récents aux maisons plus anciennes. Le rendez-vous se prend par téléphone auprès de notre agence de Lesneven.",
+    desc=lambda c, k: f"Diagnostic immobilier à Guipavas : DPE, audit énergétique, amiante, électricité, gaz. Maison récente ou ancienne : la liste change. {nb(c['n'])} DPE analysés. Devis gratuit."),
+ "Plouzané": dict(f=_plouzane, devis=True, titre="Diagnostic immobilier Plouzané : DPE, amiante, gaz, électricité | Arliane",
+    accroche="Nous réalisons vos diagnostics immobiliers à Plouzané, du bourg à La Trinité, pour les ventes de maisons et d'appartements comme pour les mises en location.",
+    desc=lambda c, k: f"Diagnostic immobilier à Plouzané : DPE, amiante, gaz, électricité pour les maisons des années 1975-1988, location. {nb(c['n'])} DPE analysés, {k['pgaz']} % chauffés au gaz. Devis gratuit."),
+ "Plougastel-Daoulas": dict(f=_plougastel, devis=True, titre="Diagnostic immobilier Plougastel-Daoulas : DPE, plomb, audit énergétique | Arliane",
+    accroche="Nous réalisons vos diagnostics immobiliers à Plougastel-Daoulas, dans le bourg comme dans les villages de la presqu'île : maisons anciennes, pavillons, appartements.",
+    desc=lambda c, k: f"Diagnostic immobilier à Plougastel-Daoulas : DPE, plomb, amiante, état parasitaire, audit énergétique des maisons classées E, F ou G. {nb(c['n'])} DPE analysés. Devis gratuit."),
+ "Le Relecq-Kerhuon": dict(f=_relecq, devis=True, titre="Diagnostic immobilier Le Relecq-Kerhuon : DPE, loi Carrez, copropriété | Arliane",
+    accroche="Nous réalisons vos diagnostics immobiliers au Relecq-Kerhuon : vente ou location d'un appartement en copropriété, vente d'une maison, diagnostics de copropriété pour les syndics.",
+    desc=lambda c, k: f"Diagnostic immobilier au Relecq-Kerhuon : DPE, loi Carrez, amiante, gaz, DPE collectif et PPPT de copropriété. {nb(c['n'])} DPE analysés, {k['pappart']} % d'appartements. Devis gratuit."),
 }
 
 
