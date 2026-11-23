@@ -82,14 +82,15 @@ def tuiles(d, k):
 <div><b>{k['pav75']} %</b><span>construits avant 1975</span></div>
 </div>"""
 
-def analyse(ou, k):
+def analyse(ou, k, nuance=False):
     """Paragraphes rédigés à partir des chiffres réels."""
     L = []
     if k["pmaison"] >= 75: L.append(f"Le parc diagnostiqué {ou} est très majoritairement composé de maisons individuelles ({k['pmaison']} %). Les dossiers de vente y comportent le plus souvent le DPE, les diagnostics électricité et gaz, l'état des risques et, selon l'âge du bien, l'amiante et le plomb.")
     elif k["pappart"] >= 50: L.append(f"Les appartements représentent {k['pappart']} % des logements diagnostiqués {ou}. Le <a href=\"/diagnostics/loi-carrez-boutin/\">mesurage loi Carrez</a> s'ajoute donc très souvent au dossier, et les copropriétés sont concernées par le <a href=\"/diagnostics/pppt/\">PPPT</a> et le <a href=\"/diagnostics/dpe-collectif/\">DPE collectif</a>.")
     else: L.append(f"Le parc diagnostiqué {ou} mêle maisons ({k['pmaison']} %) et appartements ({k['pappart']} %) : selon le bien, le dossier va du simple DPE au dossier complet avec mesurage loi Carrez en copropriété.")
     if k["pav48"] >= 20: L.append(f"{k['pav48']} % des logements diagnostiqués ont été construits avant 1948 : le <a href=\"/diagnostics/plomb/\">diagnostic plomb</a> y est fréquent, et l'<a href=\"/diagnostics/etat-parasitaire/\">état parasitaire</a>, que nous réalisons sur tous les biens, y prend tout son sens.")
-    if k["pav89"] >= 55: L.append(f"{k['pav89']} % des logements datent d'avant 1989 : ils sont concernés par le <a href=\"/diagnostics/amiante/\">diagnostic amiante</a>, obligatoire pour tout permis de construire antérieur au 1er juillet 1997.")
+    if k["pav89"] >= 55 and nuance: L.append(f"{k['pav89']} % des logements diagnostiqués ont été construits avant 1989. Le <a href=\"/diagnostics/amiante/\">diagnostic amiante</a> ne dépend pas de l'année de construction mais de la date de délivrance du permis de construire : il est requis lorsqu'elle est antérieure au 1er juillet 1997. Pour ces logements, c'est le plus souvent le cas, à vérifier bien par bien.")
+    elif k["pav89"] >= 55: L.append(f"{k['pav89']} % des logements datent d'avant 1989 : ils sont concernés par le <a href=\"/diagnostics/amiante/\">diagnostic amiante</a>, obligatoire pour tout permis de construire antérieur au 1er juillet 1997.")
     if k["pelec"] >= 55: L.append(f"L'électricité est l'énergie de chauffage principale de {k['pelec']} % des logements. Avec le nouveau coefficient applicable au 1er janvier 2027, une partie d'entre eux va gagner une classe énergétique : <a href=\"/dpe-2027/\">vérifiez-le avec notre simulateur</a>.")
     elif k["pgaz"] >= 40: L.append(f"Le gaz naturel chauffe {k['pgaz']} % des logements diagnostiqués : le <a href=\"/diagnostics/gaz/\">diagnostic gaz</a> est requis dès que l'installation a plus de 15 ans.")
     if k["pfioul"] >= 15: L.append(f"Le fioul reste présent dans {k['pfioul']} % des logements, souvent parmi les plus énergivores : l'<a href=\"/diagnostics/audit-energetique/\">audit énergétique</a> aide à préparer un changement de chauffage.")
@@ -427,35 +428,35 @@ def _guipavas(c, k, kt, tout):
     p06 = pct(c["p06"], c["n"]); p4888 = pct(c["p4874"] + c["p7588"], c["n"])
     bas = f"""<h2>Maison récente ou maison plus ancienne à Guipavas : la liste des diagnostics change</h2>
 <p>{echantillon(c, "à Guipavas")}, {k["pmaison"]} % concernent des maisons. {p06} % portent sur des logements construits depuis 2006 et {p4888} % sur des logements construits entre 1948 et 1988. {LIMITE} Ces deux générations de maisons n'appellent pas le même dossier de vente :</p>
-{ul(['<strong>Maison construite depuis 2006</strong> : le DPE et l\'état des risques sont obligatoires, comme pour toute vente. Les diagnostics <a href="/diagnostics/electricite/">électricité</a> et <a href="/diagnostics/gaz/">gaz</a> s\'ajoutent dès que les installations ont plus de quinze ans. Le diagnostic amiante n\'est pas requis lorsque le permis de construire a été délivré à partir du 1er juillet 1997, ni le constat plomb, réservé aux logements construits avant 1949.',
+{ul(['<strong>Maison construite depuis 2006</strong> : le DPE est à fournir ; l\'état des risques dépend de la situation du bien. Les diagnostics <a href="/diagnostics/electricite/">électricité</a> et <a href="/diagnostics/gaz/">gaz</a> s\'ajoutent dès que les installations ont plus de quinze ans. Le diagnostic amiante n\'est pas requis lorsque le permis de construire a été délivré à partir du 1er juillet 1997, ni le constat plomb, réservé aux logements construits avant 1949.',
      '<strong>Selon la situation du bien</strong> : le mesurage loi Carrez si la maison fait partie d\'une copropriété, et le contrôle de l\'assainissement si elle n\'est pas raccordée au réseau collectif. Ce contrôle relève du service public d\'assainissement non collectif : nous ne le réalisons pas.',
      '<strong>Maison dont le permis de construire est antérieur au 1er juillet 1997</strong> : le <a href="/diagnostics/amiante/">diagnostic amiante</a> s\'ajoute pour la vente.',
      f'<strong>Maison classée E, F ou G</strong> : l\'<a href="/diagnostics/audit-energetique/brest/">audit énergétique</a> est obligatoire pour la vendre. {nb(k["efg"])} DPE sont dans ce cas à Guipavas, soit {k["pefg"]} % contre {kt["pefg"]} % dans l\'ensemble des communes que nous suivons.'])}
 <h2>Électricité ou gaz : deux situations presque à égalité</h2>
 <p>{k["pelec"]} % des logements diagnostiqués à Guipavas sont chauffés à l'électricité et {k["pgaz"]} % au gaz. Pour les premiers, le coefficient de l'électricité passe de 1,9 à 1,7 au 1er janvier 2027 : l'étiquette peut changer sans travaux. <a href="/dpe-2027/">Estimez la nouvelle étiquette avec le numéro ADEME de votre DPE</a> avant de commander un audit énergétique. Pour les seconds, pensez au diagnostic gaz si l'installation a plus de quinze ans.</p>
 <p>Pour la liste complète selon votre bien : <a href="/projets/vente-maison/brest/">diagnostics pour vendre une maison dans la métropole de Brest</a> · <a href="/diagnostics/dpe/brest/">le DPE à Brest et dans la métropole</a>.</p>"""
-    faq = [("Ma maison de Guipavas date de 2010 : quels diagnostics pour la vendre ?", "Le DPE et l'état des risques, ainsi que les diagnostics électricité et gaz si les installations ont plus de quinze ans. Ni l'amiante ni le plomb ne sont requis pour une maison de cette époque. S'y ajoutent, selon le cas, le mesurage loi Carrez si la maison est en copropriété et le contrôle de l'assainissement non collectif si elle n'est pas raccordée au réseau. L'audit énergétique n'est requis que si la maison est classée E, F ou G."),
+    faq = [("Ma maison de Guipavas date de 2010 : quels diagnostics pour la vendre ?", "Le DPE, l'état des risques selon la situation du bien, ainsi que les diagnostics électricité et gaz si les installations ont plus de quinze ans. Le diagnostic amiante n'est pas requis si le permis de construire a été délivré à partir du 1er juillet 1997, ni le constat plomb pour un logement construit après 1949. S'y ajoutent, selon le cas, le mesurage loi Carrez si la maison est en copropriété et le contrôle de l'assainissement non collectif si elle n'est pas raccordée au réseau. L'audit énergétique n'est requis que si la maison est classée E, F ou G."),
            ("Ma maison est chauffée à l'électricité et classée E : dois-je faire un audit énergétique ?", "Oui si vous la vendez aujourd'hui : l'audit est obligatoire pour les maisons classées E, F ou G. Vérifiez toutefois l'effet du coefficient applicable au 1er janvier 2027 : <a href=\"/dpe-2027/\">notre simulateur</a> estime la nouvelle étiquette à partir du numéro ADEME de votre DPE."),
-           ("Faut-il un diagnostic amiante pour une maison des années 1980 à Guipavas ?", "Oui pour une vente : le diagnostic amiante concerne tous les logements dont le permis de construire a été délivré avant le 1er juillet 1997.")]
+           ("Faut-il un diagnostic amiante pour une maison des années 1980 à Guipavas ?", "Oui pour une vente, dès lors que le permis de construire a été délivré avant le 1er juillet 1997 : c'est cette date qui compte, et non l'année de construction.")]
     return "", bas, faq
 
 def _plouzane(c, k, kt, tout):
     p7588 = pct(c["p7588"], c["n"])
     bas = f"""<h2>Quels diagnostics pour une maison des années 1975-1988 ?</h2>
-<p>{echantillon(c, "à Plouzané")}, {p7588} % concernent des logements construits entre 1975 et 1988 : c'est la période la plus représentée dans la commune. {LIMITE} Pour un logement de cette époque, le dossier de vente comprend le plus souvent :</p>
-{ul(['le <a href="/diagnostics/amiante/">diagnostic amiante</a>, requis dès lors que le permis de construire est antérieur à juillet 1997 ;',
-     'les diagnostics <a href="/diagnostics/gaz/">gaz</a> et <a href="/diagnostics/electricite/">électricité</a>, les installations ayant plus de quinze ans ;',
-     'le <a href="/diagnostics/dpe/brest/">DPE</a> et l\'état des risques, obligatoires dans tous les cas ;',
+<p>{echantillon(c, "à Plouzané")}, {p7588} % concernent des logements construits entre 1975 et 1988 : c'est la période la plus représentée dans la commune. {LIMITE} Pour un logement de cette époque, le dossier de vente comprend le plus souvent, selon ses caractéristiques et ses installations :</p>
+{ul(['le <a href="/diagnostics/amiante/">diagnostic amiante</a>, requis lorsque le permis de construire a été délivré avant le 1er juillet 1997 ;',
+     'les diagnostics <a href="/diagnostics/gaz/">gaz</a> et <a href="/diagnostics/electricite/">électricité</a>, si les installations ont plus de quinze ans ;',
+     'le <a href="/diagnostics/dpe/brest/">DPE</a>, et l\'état des risques selon la situation du bien ;',
      'en revanche, le constat plomb n\'est pas requis : il ne concerne que les logements construits avant 1949.'])}
 <h2>Le gaz, première énergie de chauffage</h2>
 <p>{k["pgaz"]} % des logements diagnostiqués à Plouzané sont chauffés au gaz, contre {kt["pgaz"]} % dans l'ensemble des communes que nous suivons. Le diagnostic gaz porte sur l'installation intérieure : tuyauteries fixes, raccordement des appareils, ventilation des locaux. Pour le DPE, préparez la facture ou la notice de la chaudière et son attestation d'entretien : elles permettent de retenir ses caractéristiques réelles.</p>
 <h2>Vente d'une maison : l'audit énergétique concerne une minorité de biens</h2>
 <p>{nb(k["efg"])} DPE sont classés E, F ou G à Plouzané, soit {k["pefg"]} % contre {kt["pefg"]} % dans l'ensemble des communes que nous suivons. L'<a href="/diagnostics/audit-energetique/brest/">audit énergétique</a> est obligatoire pour vendre une maison individuelle, ou un immeuble détenu par un seul propriétaire, classé E, F ou G. Il ne s'applique ni aux appartements vendus comme lots de copropriété, ni aux mises en location. Faites établir le DPE en premier : vous saurez si l'audit est nécessaire. Il est valable cinq ans et doit être remis à l'acquéreur dès la première visite.</p>
 <h2>Mettre un logement en location à Plouzané</h2>
-<p>Le Technopôle Brest-Iroise se trouve sur la commune. Pour une mise en location, le dossier comprend le DPE, l'état des risques, les diagnostics électricité et gaz si les installations ont plus de quinze ans, et la surface habitable. <a href="/projets/location/brest/">Diagnostics pour louer dans la métropole de Brest</a>.</p>"""
-    faq = [("Ma maison de Plouzané date de 1982 : quels diagnostics pour la vendre ?", "Le DPE, l'état des risques, le diagnostic amiante, ainsi que les diagnostics électricité et gaz puisque les installations ont plus de quinze ans. Le constat plomb n'est pas requis pour un logement construit après 1949. L'audit énergétique s'ajoute, pour une vente, si la maison est classée E, F ou G."),
+<p>Le Technopôle Brest-Iroise se trouve sur la commune. Pour une mise en location, le dossier comprend le DPE et la surface habitable, l'état des risques selon la situation du bien, et les diagnostics électricité et gaz si les installations ont plus de quinze ans. <a href="/projets/location/brest/">Diagnostics pour louer dans la métropole de Brest</a>.</p>"""
+    faq = [("Ma maison de Plouzané date de 1982 : quels diagnostics pour la vendre ?", "Le DPE, l'état des risques selon la situation du bien, le diagnostic amiante si le permis de construire a été délivré avant le 1er juillet 1997, ainsi que les diagnostics électricité et gaz si les installations ont plus de quinze ans. Le constat plomb n'est pas requis pour un logement construit après 1949. L'audit énergétique s'ajoute, pour une vente, si la maison est classée E, F ou G."),
            ("Ma chaudière gaz a été remplacée : est-ce pris en compte dans le DPE ?", "Oui, à condition de présenter un justificatif : facture d'installation, notice ou attestation d'entretien mentionnant le modèle. En l'absence de justificatifs, certaines caractéristiques peuvent être renseignées à partir de valeurs conventionnelles, susceptibles d'influencer le résultat du DPE."),
-           ("Quels diagnostics pour louer un appartement à Plouzané ?", "Le DPE, l'état des risques, les diagnostics électricité et gaz si les installations ont plus de quinze ans, et la surface habitable. Le constat plomb ne concerne que les logements construits avant 1949.")]
+           ("Quels diagnostics pour louer un appartement à Plouzané ?", "Le DPE et la surface habitable, l'état des risques selon la situation du bien, et les diagnostics électricité et gaz si les installations ont plus de quinze ans. Le constat plomb ne concerne que les logements construits avant 1949.")]
     return "", bas, faq
 
 def _plougastel(c, k, kt, tout):
@@ -471,7 +472,7 @@ def _plougastel(c, k, kt, tout):
 {ul([f'<strong>Chauffage électrique</strong> ({k["pelec"]} % des logements diagnostiqués) : avec le coefficient applicable au 1er janvier 2027, l\'étiquette peut changer. <a href="/dpe-2027/">Vérifiez-le avec le numéro ADEME de votre DPE</a>.',
      f'<strong>Chauffage au fioul</strong> ({k["pfioul"]} % des logements diagnostiqués) : l\'audit chiffre le remplacement de la chaudière et les travaux d\'isolation à mener en priorité.'])}
 <p>Pour la liste complète selon votre bien : <a href="/projets/vente-maison/brest/">diagnostics pour vendre une maison dans la métropole de Brest</a>.</p>"""
-    faq = [("Je vends une maison en pierre d'avant 1949 à Plougastel-Daoulas : quels diagnostics ?", "Le DPE, l'état des risques, le constat plomb, le diagnostic amiante, ainsi que les diagnostics électricité et gaz si les installations ont plus de quinze ans. L'audit énergétique s'ajoute si la maison est classée E, F ou G."),
+    faq = [("Je vends une maison en pierre d'avant 1949 à Plougastel-Daoulas : quels diagnostics ?", "Le DPE, le constat plomb, l'état des risques selon la situation du bien, le diagnostic amiante si le permis de construire a été délivré avant le 1er juillet 1997, ainsi que les diagnostics électricité et gaz si les installations ont plus de quinze ans. L'audit énergétique s'ajoute si la maison est classée E, F ou G."),
            ("L'état parasitaire est-il obligatoire pour vendre à Plougastel-Daoulas ?", "Pas dans tous les cas. Il renseigne l'acquéreur sur la présence de champignons du bois, comme la mérule, et d'insectes xylophages, ce qui est utile pour une maison ancienne. Votre notaire vous indiquera s'il est attendu pour votre vente."),
            ("Ma maison chauffée au fioul est classée F : que contient l'audit énergétique ?", "L'audit propose des scénarios de travaux chiffrés, par étapes, pour améliorer la classe du logement : isolation, ventilation, remplacement du système de chauffage. Il est valable cinq ans.")]
     return "", bas, faq
@@ -493,7 +494,7 @@ def _relecq(c, k, kt, tout):
 <p>Nous réalisons le <a href="/diagnostics/pppt/brest/">projet de plan pluriannuel de travaux (PPPT)</a> et le <a href="/diagnostics/dpe-collectif/">DPE collectif</a> des copropriétés du Relecq-Kerhuon.</p>"""
     faq = [("Je vends un appartement au Relecq-Kerhuon : faut-il un audit énergétique ?", "Non lorsque l'appartement est vendu comme lot de copropriété : l'audit énergétique réglementaire ne s'applique pas aux lots de copropriété. Le DPE reste obligatoire, avec les autres diagnostics de la vente."),
            ("Faut-il mesurer la cave et le garage vendus avec mon appartement ?", "Non. La superficie loi Carrez ne s'applique pas aux caves, garages et emplacements de stationnement, ni aux lots ou fractions de lots de moins de 8 m². Seule la partie privative de l'appartement est mesurée."),
-           ("Mon appartement date de 2009 : quels diagnostics pour le vendre ?", "Le DPE, l'état des risques et le mesurage loi Carrez, ainsi que les diagnostics électricité et gaz puisque les installations ont plus de quinze ans. Ni l'amiante ni le plomb ne sont requis pour un immeuble de cette époque."),
+           ("Mon appartement date de 2009 : quels diagnostics pour le vendre ?", "Le DPE et le mesurage loi Carrez, l'état des risques selon la situation du bien, ainsi que les diagnostics électricité et gaz si les installations ont plus de quinze ans. Le diagnostic amiante n'est pas requis si le permis de construire a été délivré à partir du 1er juillet 1997, ni le constat plomb pour un immeuble construit après 1949."),
            ("L'immeuble a déjà un DPE collectif : dois-je refaire un DPE pour mon appartement ?", "Le DPE collectif ne remplace pas automatiquement le DPE de votre logement. La réglementation permet, sous conditions, d'établir le DPE d'un appartement à partir des données de l'immeuble : le diagnostiqueur vérifie si c'est possible dans votre cas.")]
     return "", bas, faq
 
@@ -641,6 +642,7 @@ def build():
         devis_btn = devis_p(f"Demander un devis pour {nom}", nom) if loc and loc.get("devis") else ""
         haut, bas, faq_loc = loc["f"](c, k, kt, tout) if loc else ("", "", [])
         sans_delai = bool(loc and loc.get("sans_delai"))
+        if sans_delai: faq[0] = (faq[0][0], "La liste dépend du bien. Le DPE est demandé pour la vente d'un logement ; l'état des risques dépend de la situation du bien ; l'amiante, le plomb, l'électricité, le gaz, le mesurage loi Carrez et l'audit énergétique dépendent de ses caractéristiques et de ses installations. <a href=\"/quels-diagnostics/\">Obtenez la liste pour votre bien</a>.")
         if sans_delai: faq[1] = (faq[1][0], f"Contactez notre agence pour connaître nos prochaines disponibilités, au {TEL}.")
         faq = faq_loc + faq
         arts = articles_pour(k)
@@ -650,7 +652,7 @@ def build():
 <h2>Le DPE {ou} en chiffres</h2>
 {tuiles(c, k)}{barres(c)}{avert}{SRC}
 <h2>Ce que ces chiffres disent du bâti {de_la(nom)}</h2>
-{("<p>" + m["bati"] + "</p>") if m else ""}{analyse(ou, k)}
+{("<p>" + m["bati"] + "</p>") if m else ""}{analyse(ou, k, nuance=bool(loc and loc.get("sans_delai")))}
 {bas}
 <h2>Âge du bâti et énergies de chauffage {ou}</h2>
 {table_periodes(c)}{phrase_energies(c, ou)}
