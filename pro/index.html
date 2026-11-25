@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Espace professionnels | Arliane Diagnostic Nord Finistère</title>
+<meta name="description" content="Espace réservé aux professionnels de l'immobilier : diagnostics à prévoir pour un bien, prochaines disponibilités et demande d'intervention.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#4c741c">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.pro-etape{display:flex;align-items:baseline;gap:10px}
+.pro-etape b{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.95rem}
+.pro-creneaux{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.pro-creneau{font:inherit;text-align:left;cursor:pointer;padding:11px 16px;border-radius:12px;border:1.5px solid #cfe3b3;background:#eef6e2;color:var(--texte)}
+.pro-creneau strong{display:block}
+.pro-creneau small{color:var(--gris)}
+.pro-creneau:hover{border-color:var(--accent)}
+.pro-creneau[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.pro-creneau[aria-pressed="true"] small{color:#fff}
+.pro-creneau:focus-visible,.pro-form input:focus-visible,.pro-form textarea:focus-visible{outline:3px solid rgba(122,176,54,.5);outline-offset:2px}
+.pro-form input,.pro-form textarea{width:100%;padding:10px 12px;border:1.5px solid var(--bord);border-radius:9px;font:inherit;background:#fff;color:inherit}
+.pro-form textarea{min-height:90px;resize:vertical}
+.pro-form .pro-large{grid-column:1/-1}
+.pro-texte{white-space:pre-wrap;word-break:break-word;font:.9rem/1.55 ui-monospace,Menlo,Consolas,monospace;background:#fff;border:1px solid var(--bord);border-radius:10px;padding:14px;margin:0 0 10px}
+</style>
+</head>
+<body>
+<a class="saut" href="#contenu">Aller au contenu</a>
+<header class="haut">
+<div class="large barre">
+<a class="logo" href="/" aria-label="Arliane Diagnostic Nord Finistère – accueil"><img src="https://diagnostic-immobilier-arliane.fr/wp-content/themes/ARLIANE/images/logo-arliane.png" alt="Arliane Diagnostic Immobilier" width="186" height="48" onerror="this.outerHTML='<strong>Arliane Diagnostic Immobilier</strong>'"><span>Nord Finistère · agence de Lesneven</span></a>
+<a class="btn tel" href="tel:+33298463901">📞 02 98 46 39 01</a>
+</div>
+<nav class="menu" aria-label="Menu principal"><div class="large"><a href="/diagnostics/">Diagnostics</a><a href="/quels-diagnostics/">Quels diagnostics ?</a><a href="/secteurs/">Secteurs</a><a href="/professionnels/">Professionnels</a><a href="/dpe-2027/">DPE 2027</a><a href="/observatoire-dpe-nord-finistere/">Observatoire DPE</a><a href="/actualites/">Actualités</a><a href="/devis/">Devis</a><a href="/contact/">Contact</a></div></nav>
+</header>
+<main id="contenu">
+<div class="large"><nav class="fil" aria-label="Fil d'Ariane"><a href="/">Accueil</a> › <span>Espace professionnels</span></nav>
+<h1>Espace professionnels</h1>
+<p class="chapo">Vous rentrez un mandat ou préparez une relocation ? Voyez les diagnostics à prévoir et nos prochaines disponibilités, puis envoyez-nous la demande : nous rappelons votre client pour fixer le rendez-vous.</p>
+
+<h2 class="pro-etape"><b>1</b> Les diagnostics à prévoir pour ce bien</h2>
+<form id="qd" class="qd" novalidate>
+<div><label for="qd-projet">Votre projet</label><select id="qd-projet"><option value="vente">Je vends</option><option value="location">Je loue</option><option value="travaux">Je prépare des travaux</option><option value="copro">Je gère une copropriété</option></select></div>
+<div><label for="qd-type">Type de bien</label><select id="qd-type"><option value="maison">Maison</option><option value="appartement">Appartement en copropriété</option><option value="immeuble">Immeuble entier</option></select></div>
+<div><label for="qd-annee">Année de construction</label><select id="qd-annee"><option value="av1949">Avant 1949</option><option value="av1997" selected>De 1949 à juin 1997</option><option value="apres">Après juillet 1997</option></select></div>
+<div><label for="qd-elec">Installation électrique de plus de 15 ans ?</label><select id="qd-elec"><option value="oui">Oui</option><option value="non">Non</option><option value="nsp">Je ne sais pas</option></select></div>
+<div><label for="qd-gaz">Installation de gaz</label><select id="qd-gaz"><option value="aucun">Pas de gaz</option><option value="plus15">Plus de 15 ans</option><option value="moins15">Moins de 15 ans</option><option value="nsp">Je ne sais pas</option></select></div>
+<div><label for="qd-classe">Étiquette du DPE actuel</label><select id="qd-classe"><option value="inconnu">Je ne la connais pas</option><option value="abcd">A, B, C ou D</option><option value="efg">E, F ou G</option></select></div>
+<div class="qd-btn"><button type="submit" class="btn">Voir mes diagnostics</button></div>
+</form>
+<div id="qd-res" aria-live="polite"></div>
+<noscript><p>Consultez notre <a href="/vente-location/">tableau des diagnostics obligatoires</a>.</p></noscript>
+<script src="/assets/quels.js" defer></script>
+
+<h2 class="pro-etape"><b>2</b> Nos prochaines disponibilités</h2>
+<p class="note" id="pro-maj"></p>
+<div id="pro-creneaux" class="pro-creneaux"></div>
+
+<h2 class="pro-etape"><b>3</b> Votre demande</h2>
+<p>Les réponses données plus haut, les diagnostics listés et le créneau choisi sont repris dans la demande.</p>
+<form id="pro-form" class="qd pro-form">
+<div><label for="pro-agence">Votre agence ou étude</label><input id="pro-agence" autocomplete="organization" required></div>
+<div><label for="pro-nom">Votre nom</label><input id="pro-nom" autocomplete="name" required></div>
+<div><label for="pro-mail">Votre e-mail</label><input id="pro-mail" type="email" autocomplete="email" required></div>
+<div><label for="pro-tel">Votre téléphone</label><input id="pro-tel" type="tel" autocomplete="tel"></div>
+<div><label for="pro-commune">Commune du bien</label><input id="pro-commune"></div>
+<div><label for="pro-surface">Surface ou nombre de pièces</label><input id="pro-surface"></div>
+<div><label for="pro-echeance">Échéance (compromis, mise en location)</label><input id="pro-echeance"></div>
+<div class="pro-large"><label for="pro-msg">Précisions (accès, clés, occupant, question)</label><textarea id="pro-msg"></textarea></div>
+<div class="qd-btn pro-large"><button type="submit" class="btn">Préparer la demande</button></div>
+</form>
+<div id="pro-sortie" class="qd-out" hidden>
+<h3>Votre demande est prête</h3>
+<pre id="pro-texte" class="pro-texte"></pre>
+<p><a class="btn" id="pro-mailto" href="mailto:accueil@sas-liberge.fr">Ouvrir dans ma messagerie</a> <button type="button" class="btn clair" id="pro-copier">Copier la demande</button> <span class="note" id="pro-etat" aria-live="polite"></span></p>
+<p class="note">Cette page n'envoie pas la demande à votre place. Envoyez-la à <strong>accueil@sas-liberge.fr</strong> ou appelez le <a href="tel:+33298463901">02 98 46 39 01</a>.</p>
+</div>
+
+<h2>Utile pour vos rendez-vous vendeurs et bailleurs</h2>
+<div class="cartes">
+<a class="carte" href="/dpe-2027/"><strong>Simulateur DPE 2027</strong><span>La nouvelle étiquette d'un DPE existant, à partir de son numéro ADEME.</span></a>
+<a class="carte" href="/vente-location/"><strong>Vente ou location</strong><span>Les diagnostics obligatoires et leurs durées de validité.</span></a>
+<a class="carte" href="/diagnostics/audit-energetique/"><strong>Audit énergétique</strong><span>Quand il s'ajoute au DPE lors d'une vente.</span></a>
+<a class="carte" href="/diagnostics/pppt/"><strong>PPPT, DTG, DPE collectif</strong><span>Pour vos copropriétés.</span></a>
+</div>
+<h2>À demander au propriétaire avant la visite</h2>
+<ul>
+<li>Les anciens diagnostics, même périmés</li>
+<li>Les factures de travaux : isolation, fenêtres, chauffage, ventilation</li>
+<li>Les plans, le permis de construire, la taxe foncière</li>
+<li>En copropriété : le règlement et le relevé de charges</li>
+<li>L'accès à toutes les pièces, aux combles et au vide sanitaire</li>
+</ul>
+<p class="note">Page réservée aux professionnels à qui nous l'avons transmise. Du lundi au vendredi, de 9h à 12h et de 14h à 18h.</p>
+</div>
+</main>
+<script>
+/* ===== DISPONIBILITÉS : seule partie à mettre à jour à la main =====
+   Un créneau = { jour: "Jeudi 3 décembre", moment: "matin", secteur: "Tout le secteur" }
+   Liste vide = message « Contactez notre agence ». */
+var PRO_MAJ = "25 novembre 2026";
+var PRO_CRENEAUX = [
+  { jour: "Lundi 30 novembre", moment: "après-midi", secteur: "Tout le secteur" },
+  { jour: "Mardi 1er décembre", moment: "après-midi", secteur: "Tout le secteur" },
+  { jour: "Mercredi 2 décembre", moment: "matin", secteur: "Tout le secteur" },
+  { jour: "Mercredi 2 décembre", moment: "après-midi", secteur: "Tout le secteur" },
+  { jour: "Jeudi 3 décembre", moment: "matin", secteur: "Tout le secteur" }
+];
+/* ================================================================== */
+(function(){
+  var $ = function(id){ return document.getElementById(id); }, choisi = null, box = $("pro-creneaux");
+  if (!PRO_CRENEAUX.length){
+    var p = document.createElement("p");
+    p.textContent = "Contactez notre agence pour connaître nos prochaines disponibilités : 02 98 46 39 01.";
+    box.appendChild(p);
+  } else {
+    $("pro-maj").textContent = "Mises à jour le " + PRO_MAJ + ". Cliquez sur un créneau pour le joindre à votre demande ; nous le confirmons par téléphone.";
+    PRO_CRENEAUX.forEach(function(c, i){
+      var b = document.createElement("button"); b.type = "button"; b.className = "pro-creneau"; b.setAttribute("aria-pressed", "false");
+      var t = document.createElement("strong"); t.textContent = c.jour + ", " + c.moment;
+      var s = document.createElement("small"); s.textContent = c.secteur || "";
+      b.appendChild(t); b.appendChild(s);
+      b.addEventListener("click", function(){
+        choisi = (choisi === i) ? null : i;
+        Array.prototype.forEach.call(box.children, function(el, j){ el.setAttribute("aria-pressed", String(j === choisi)); });
+      });
+      box.appendChild(b);
+    });
+  }
+  function lib(id){ var s = $(id); return s.options[s.selectedIndex].text; }
+  function liste(){
+    var items = document.querySelectorAll("#qd-res li a");
+    return Array.prototype.map.call(items, function(a){ return a.textContent; });
+  }
+  $("pro-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var d = liste(), c = choisi !== null ? PRO_CRENEAUX[choisi] : null;
+    var t = [
+      "Demande de diagnostics - " + $("pro-agence").value,
+      "Contact : " + $("pro-nom").value + ($("pro-tel").value ? " - " + $("pro-tel").value : ""),
+      "E-mail : " + $("pro-mail").value,
+      "",
+      "Projet : " + lib("qd-projet"),
+      "Bien : " + lib("qd-type") + ($("pro-commune").value ? ", " + $("pro-commune").value : ""),
+      "Surface ou pièces : " + ($("pro-surface").value || "non précisé"),
+      "Année de construction : " + lib("qd-annee"),
+      "Électricité de plus de 15 ans : " + lib("qd-elec"),
+      "Gaz : " + lib("qd-gaz"),
+      "Étiquette DPE : " + lib("qd-classe"),
+      "",
+      "Diagnostics listés : " + (d.length ? d.join(", ") : "à définir ensemble"),
+      "Créneau souhaité : " + (c ? c.jour + ", " + c.moment : "le premier disponible"),
+      "Échéance : " + ($("pro-echeance").value || "non précisée")
+    ];
+    if ($("pro-msg").value) t.push("", "Précisions : " + $("pro-msg").value);
+    var texte = t.join("\n");
+    $("pro-texte").textContent = texte;
+    $("pro-mailto").href = "mailto:accueil@sas-liberge.fr?subject=" + encodeURIComponent("Demande de diagnostics - " + $("pro-agence").value) + "&body=" + encodeURIComponent(texte);
+    var s = $("pro-sortie"); s.hidden = false; $("pro-etat").textContent = "";
+    s.scrollIntoView({behavior: "smooth", block: "nearest"});
+  });
+  $("pro-copier").addEventListener("click", function(){
+    var txt = $("pro-texte").textContent;
+    function ko(){ $("pro-etat").textContent = "Copie impossible : sélectionnez le texte ci-dessus."; }
+    try { navigator.clipboard.writeText(txt).then(function(){ $("pro-etat").textContent = "Demande copiée."; }, ko); } catch (err) { ko(); }
+  });
+})();
+</script>
+<footer class="bas">
+<div class="large colonnes">
+<div><strong>Arliane Diagnostic Nord Finistère</strong><br>15 rue Général de Gaulle<br>29260 Lesneven<br><a href="tel:+33298463901">02 98 46 39 01</a><br><a href="mailto:accueil@sas-liberge.fr">accueil@sas-liberge.fr</a><br>Du lundi au vendredi, 9h-12h et 14h-18h<br><a href="https://share.google/TphOHGbXyvr36DbpX" rel="noopener">Notre fiche Google</a></div>
+<div><strong>Diagnostics</strong><br><a href="/diagnostics/dpe/">DPE</a><br><a href="/diagnostics/amiante/">Amiante</a><br><a href="/diagnostics/plomb/">Plomb</a><br><a href="/diagnostics/electricite/">Électricité</a><br><a href="/diagnostics/gaz/">Gaz</a><br><a href="/diagnostics/etat-parasitaire/">État parasitaire</a><br><a href="/diagnostics/loi-carrez-boutin/">Loi Carrez et Boutin</a><br><a href="/diagnostics/erp/">ERP</a><br><a href="/diagnostics/audit-energetique/">Audit énergétique</a><br><a href="/diagnostics/pppt/">PPPT</a><br><a href="/diagnostics/dtg/">DTG</a><br><a href="/diagnostics/dpe-collectif/">DPE collectif</a></div>
+<div><strong>Secteurs</strong><br><a href="/secteurs/secteur-lesneven/">Lesneven</a><br><a href="/secteurs/secteur-abers/">Lannilis</a><br><a href="/secteurs/secteur-brest/">Brest</a><br><a href="/secteurs/secteur-landerneau/">Landerneau</a><br><a href="/secteurs/secteur-landivisiau/">Landivisiau</a><br><a href="/secteurs/secteur-haut-leon/">Saint-Pol-de-Léon</a><br><a href="/secteurs/secteur-iroise/">Saint-Renan</a><br><a href="/secteurs/secteur-morlaix/">Morlaix</a></div>
+<div><strong>En pratique</strong><br><a href="/quels-diagnostics/">Quels diagnostics pour mon bien ?</a><br><a href="/vente-location/">Vente ou location</a><br><a href="/projets/">Vos diagnostics par projet</a><br><a href="/professionnels/">Professionnels</a><br><a href="/dpe-2027/">Simulateur DPE 2027</a><br><a href="/observatoire-dpe-nord-finistere/">Observatoire DPE</a><br><a href="/actualites/">Actualités</a><br><a href="/devis/">Devis gratuit</a><br><a href="/agence/">Notre agence</a><br><a href="/contact/">Contact</a><br><a href="/mentions-legales/">Mentions légales</a></div>
+</div>
+</footer>
+</body>
+</html>
